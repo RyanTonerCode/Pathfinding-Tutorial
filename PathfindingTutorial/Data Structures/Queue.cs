@@ -123,7 +123,7 @@ namespace PathfindingTutorial.Data_Structures
                 throw new QueueUnderflowException();
             T top = queue_data[front];
             front = (front + 1) % queue_capacity; //increment the front of the queue to next element
-            Count++;
+            Count--;
             return top;
         }
 

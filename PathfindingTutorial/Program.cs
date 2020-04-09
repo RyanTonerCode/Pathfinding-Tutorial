@@ -55,7 +55,7 @@ namespace PathfindingTutorial
             G.AddNeighbor(A);
             G.AddNeighbor(F);
 
-            GraphNode<char>[] nodes = { A,B,C,D,E,F,G };
+            GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
 
 
 
@@ -111,7 +111,7 @@ namespace PathfindingTutorial
         static void Main(string[] args)
         {
             //StackVsQueue();
-            //MakeGraph();
+            MakeGraph();
 
             Console.ReadLine();
         }
