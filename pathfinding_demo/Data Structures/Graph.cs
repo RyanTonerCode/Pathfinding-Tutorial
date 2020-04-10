@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace pathfinding_demo.Data_Structures
 {
@@ -36,9 +37,13 @@ namespace pathfinding_demo.Data_Structures
             while (stk.Count > 0) //diff from isempty? 
             {
                 NodePath<T> cur = stk.Pop();
+                //Console.Write(".");
 
                 if (cur.Node == End)
+                {
+                    Console.WriteLine("");
                     return cur;
+                }
 
                 found.Add(cur.Node);
 
@@ -64,9 +69,14 @@ namespace pathfinding_demo.Data_Structures
             while (stk.Count > 0)
             {
                 NodePath<T> cur = stk.Dequeue();
+                //Console.Write(".");
 
                 if (cur.Node == End)
+                {
+                    Console.WriteLine("");
                     return cur;
+                }
+                //Console.WriteLine(cur.Node.GetValue());
 
                 found.Add(cur.Node);
 
