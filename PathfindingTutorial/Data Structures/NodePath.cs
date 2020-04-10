@@ -1,4 +1,7 @@
-﻿namespace PathfindingTutorial.Data_Structures
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
+namespace PathfindingTutorial.Data_Structures
 {
     public class NodePath<T>
     {
@@ -17,6 +20,5 @@
             Node = n;
             Parent = par;
         }
-
     }
 }

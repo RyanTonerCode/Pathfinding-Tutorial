@@ -55,7 +55,7 @@ namespace PathfindingTutorial
             G.AddNeighbor(A);
             G.AddNeighbor(F);
 
-            GraphNode<char>.AddMutualNeighbor(A, B);
+            IGraphNode<char>.AddMutualNeighbor(A, B);
 
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
 
@@ -110,6 +110,57 @@ namespace PathfindingTutorial
                 }
             }
 
+        }
+
+        static WeightedGraphNode<string>[][] makeWeightedGrid10x10()
+        {
+            //Make a 10x10 grid where even columns have a barrier vertically centered height 8
+            //And connect the whitespace
+            WeightedGraphNode<string>[][] grid = new WeightedGraphNode<string>[10][];
+            for (int i = 0; i < 10; i++)
+            {
+                grid[i] = new WeightedGraphNode<string>[10];
+                for (int j = 0; j < 10; j++)
+                {
+                    grid[i][j] = new WeightedGraphNode<string>(i + "," + j);
+                    if (j > 0 && i % 2 != 0) //if we are on an odd column and there is a row above us, connect the node above us
+                    {
+                        IGraphNode<string>.AddMutualNeighbor(grid[i][j], grid[i][j - 1]);
+                    }
+                    if (i > 0 && (j == 1 || j == 8)) //if we are on the top or bottom row and there is a column before us, connect the node before us
+                    {
+                        //IGraphNode<string>.AddMutualNeighbor(grid[i][j], grid[i - 1][j]);
+                        grid[i][j].AddNeighbor(grid[i - 1][j], 10);
+                        grid[i - 1][j].AddNeighbor(grid[i][j], 10);
+                    }
+                }
+            }
+            return grid;
+        }
+
+        static void anotherGraph()
+        {
+
+            //GraphNode<string>[][] grid = makeGrid10x10();
+            var grid = makeWeightedGrid10x10();
+
+            WeightedGraphNode<string>[] nodes = new WeightedGraphNode<string>[grid.Length * grid[0].Length]; //convert the grid to an array for pathfinding
+            for (int i = 0; i < grid.Length; i++)
+            {
+                for (int j = 0; j < grid[i].Length; j++)
+                {
+                    nodes[(i * grid.Length) + j] = grid[i][j];
+                }
+            }
+
+            Graph<string> a_graph = new Graph<string>(nodes); //convert array to graph object
+            var path = a_graph.RunBFS(grid[1][5], grid[25][20]);
+            if (path == null)
+                Console.WriteLine("Nope :( \n");
+            else
+            {
+                Console.WriteLine("Success! :) \n");
+            }
         }
 
 

@@ -9,5 +9,6 @@ namespace PathfindingTutorial.Data_Structures
         public void Add(T item);
         public T Remove();
         public bool IsEmpty();
+
     }
 }

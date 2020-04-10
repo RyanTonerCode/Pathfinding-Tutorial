@@ -108,5 +108,40 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
+        public NodePath<T> RunDjikstra(WeightedGraphNode<T> Start, WeightedGraphNode<T> End)
+        {
+            var stk = new PriorityQueue<WeightedNodePath<T>>();
+
+            var begin = new WeightedNodePath<T>(Start, null);
+            stk.Enqueue(begin, 0);
+
+            //this is our "marked" set
+            HashSet<WeightedGraphNode<T>> found = new HashSet<WeightedGraphNode<T>>();
+
+            while (stk.Count > 0)
+            {
+                WeightedNodePath<T> cur = stk.Dequeue();
+
+                if (cur.Node == End)
+                    return cur;
+
+                found.Add((WeightedGraphNode<T>)cur.Node);
+
+                //add all new nodes to the stack
+                foreach (var neighbor in cur.Node.GetNeighbors())
+                    if (!found.Contains((WeightedGraphNode<T>)neighbor))
+                    { //unmarked neighbor
+
+                        double next_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+
+                        double new_weight = cur.Weight + next_weight;
+
+                        stk.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight), new_weight);
+                    }
+            }
+
+            return null;
+        }
+
     }
 }

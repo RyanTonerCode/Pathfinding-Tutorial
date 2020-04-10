@@ -13,5 +13,11 @@ namespace PathfindingTutorial.Data_Structures
 
         public void AddNeighbor(IGraphNode<T> neighbor);
 
+        public static void AddMutualNeighbor(IGraphNode<T> a, IGraphNode<T> b)
+        {
+            a.AddNeighbor(b);
+            b.AddNeighbor(a);
+        }
+
     }
 }
