@@ -59,6 +59,7 @@ namespace PathfindingTutorial.Data_Structures
 
             stk.Enqueue(begin);
 
+            //this is our "marked" set
             HashSet<IGraphNode<T>> found = new HashSet<IGraphNode<T>>();
 
             while (stk.Count > 0)
@@ -72,8 +73,36 @@ namespace PathfindingTutorial.Data_Structures
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
-                    if (!found.Contains(neighbor))
+                    if (!found.Contains(neighbor)) //unmarked neighbor
                         stk.Enqueue(new NodePath<T>(neighbor, cur));
+            }
+
+            return null;
+        }
+
+        public NodePath<T> RunSearch(IGraphSearcher<NodePath<T>> dataStructure, IGraphNode<T> Start, IGraphNode<T> End)
+        {
+
+            var begin = new NodePath<T>(Start, null);
+
+            dataStructure.Add(begin);
+
+            //this is our "marked" set
+            HashSet<IGraphNode<T>> found = new HashSet<IGraphNode<T>>();
+
+            while (!dataStructure.IsEmpty())
+            {
+                NodePath<T> cur = dataStructure.Remove();
+
+                if (cur.Node == End)
+                    return cur;
+
+                found.Add(cur.Node);
+
+                //add all new nodes to the stack
+                foreach (var neighbor in cur.Node.GetNeighbors())
+                    if (!found.Contains(neighbor)) //unmarked neighbor
+                        dataStructure.Add(new NodePath<T>(neighbor, cur));
             }
 
             return null;

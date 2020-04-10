@@ -20,7 +20,7 @@ namespace PathfindingTutorial
             }
 
             //show the difference between stacks and queues
-            while (!test_stack.IsEmpty && !test_queue.IsEmpty)
+            while (!test_stack.IsEmpty() && !test_queue.IsEmpty())
             {
                 int from_stack = test_stack.Pop();
                 int from_queue = test_queue.Dequeue();
@@ -55,6 +55,8 @@ namespace PathfindingTutorial
             G.AddNeighbor(A);
             G.AddNeighbor(F);
 
+            GraphNode<char>.AddMutualNeighbor(A, B);
+
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
 
 
@@ -71,6 +73,9 @@ namespace PathfindingTutorial
 
                     Console.WriteLine("Does a path exist from {0} to {1}?\n", a.GetValue(), b.GetValue());
                     var path = a_graph.RunDFS(a, b);
+
+                    var path2 = a_graph.RunSearch(new Stack<NodePath<char>>(), a, b);
+
                     if (path == null)
                         Console.WriteLine("Nope :(");
                     else
@@ -92,7 +97,7 @@ namespace PathfindingTutorial
 
                         Console.WriteLine("\n Using a stack, the path in-order is ");
 
-                        while(!reverse_backtracking.IsEmpty){
+                        while(!reverse_backtracking.IsEmpty()){
                             var top = reverse_backtracking.Pop();
                             Console.Write("{0}", top.Node.GetValue());
                             if (reverse_backtracking.Count > 0)

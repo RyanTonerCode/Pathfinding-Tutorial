@@ -42,7 +42,7 @@ namespace PathfindingTutorial.Data_Structures
         }
     }
 
-    public class Stack<T>
+    public class Stack<T> : IGraphSearcher<T>
     {
 
         /// <summary>
@@ -87,6 +87,8 @@ namespace PathfindingTutorial.Data_Structures
         {
             Count = 0;
             stack_capacity = capacity;
+            //TODO verify capacity
+
             stack_data = new T[capacity];
         }
 
@@ -99,6 +101,7 @@ namespace PathfindingTutorial.Data_Structures
             if (array.Length > max_capacity)
                 throw new QueueOverflowException();
             Count = array.Length;
+            stack_capacity = 64;
             while (stack_capacity < array.Length)
                 stack_capacity *= 2;
             if (stack_capacity > max_capacity)
@@ -115,13 +118,13 @@ namespace PathfindingTutorial.Data_Structures
         /// <summary>
         /// Returns whether or not this stack is empty
         /// </summary>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty() => Count == 0;
 
         private int top_index => Count - 1;
 
         public T Peek()
         {
-            if (IsEmpty)
+            if (IsEmpty())
                 throw new StackUnderflowException();
             T top = stack_data[top_index];
             return top;
@@ -129,7 +132,7 @@ namespace PathfindingTutorial.Data_Structures
 
         public T Pop()
         {
-            if (IsEmpty)
+            if (IsEmpty())
                 throw new StackUnderflowException();
             T top = stack_data[top_index];
             Count --;
@@ -153,7 +156,10 @@ namespace PathfindingTutorial.Data_Structures
             Count++;
         }
 
+        public void Add(T item) => Push(item);
 
+        public T Remove() => Pop();
 
+        public IGraphSearcher<T> Factory() => new Stack<T>();
     }
 }

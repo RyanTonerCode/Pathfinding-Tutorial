@@ -36,7 +36,7 @@ namespace PathfindingTutorial.Data_Structures
         }
     }
 
-    public class Queue<T>
+    public class Queue<T> : IGraphSearcher<T>
     {
 
         private T[] queue_data;
@@ -107,11 +107,11 @@ namespace PathfindingTutorial.Data_Structures
 
         public int Count { get; private set; }
 
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty() => Count == 0;
 
         public T Peek()
         {
-            if (IsEmpty)
+            if (IsEmpty())
                 throw new QueueUnderflowException();
             T top = queue_data[front];
             return top;
@@ -119,7 +119,7 @@ namespace PathfindingTutorial.Data_Structures
 
         public T Dequeue()
         {
-            if (IsEmpty)
+            if (IsEmpty())
                 throw new QueueUnderflowException();
             T top = queue_data[front];
             front = (front + 1) % queue_capacity; //increment the front of the queue to next element
@@ -146,7 +146,11 @@ namespace PathfindingTutorial.Data_Structures
             Count++;
         }
 
+        public void Add(T item) => Enqueue(item);
 
+        public T Remove() => Dequeue();
+
+        public IGraphSearcher<T> Factory() => new Queue<T>();
 
     }
 }
