@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PathfindingTutorial.Data_Structures
 {
     public class GraphNode<T> : IGraphNode<T>
     {
         private T value = default;
-        private readonly List<IGraphNode<T>> neighbors = new List<IGraphNode<T>>(10);
+        protected readonly List<IGraphNode<T>> neighbors = new List<IGraphNode<T>>(10);
 
         public GraphNode(T value)
         {
@@ -19,7 +17,7 @@ namespace PathfindingTutorial.Data_Structures
             return neighbors;
         }
 
-        public void AddNeighbor(IGraphNode<T> neighbor)
+        public virtual void AddNeighbor(IGraphNode<T> neighbor)
         {
             neighbors.Add(neighbor);
         }

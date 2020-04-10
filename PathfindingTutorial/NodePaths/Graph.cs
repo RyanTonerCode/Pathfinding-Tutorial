@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -110,17 +111,17 @@ namespace PathfindingTutorial.Data_Structures
 
         public NodePath<T> RunDjikstra(WeightedGraphNode<T> Start, WeightedGraphNode<T> End)
         {
-            var stk = new PriorityQueue<WeightedNodePath<T>>();
+            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
 
-            var begin = new WeightedNodePath<T>(Start, null);
-            stk.Enqueue(begin, 0);
+            var begin = new WeightedNodePath<T>(Start,null,0);
+            priQueue.Enqueue(begin);
 
             //this is our "marked" set
             HashSet<WeightedGraphNode<T>> found = new HashSet<WeightedGraphNode<T>>();
 
-            while (stk.Count > 0)
+            while (!priQueue.IsEmpty())
             {
-                WeightedNodePath<T> cur = stk.Dequeue();
+                WeightedNodePath<T> cur = priQueue.Dequeue();
 
                 if (cur.Node == End)
                     return cur;
@@ -134,9 +135,9 @@ namespace PathfindingTutorial.Data_Structures
 
                         double next_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
 
-                        double new_weight = cur.Weight + next_weight;
+                        double new_weight = cur.PathWeightToHere + next_weight;
 
-                        stk.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight), new_weight);
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight));
                     }
             }
 
