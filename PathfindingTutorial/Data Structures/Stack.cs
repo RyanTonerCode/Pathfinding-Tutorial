@@ -86,9 +86,11 @@ namespace PathfindingTutorial.Data_Structures
         public Stack(int capacity = 64)
         {
             Count = 0;
-            stack_capacity = capacity;
-            //TODO verify capacity
 
+            if (capacity > max_capacity)
+                throw new StackOverflowException();
+
+            stack_capacity = capacity;
             stack_data = new T[capacity];
         }
 

@@ -99,6 +99,8 @@ namespace PathfindingTutorial.Data_Structures
         public Queue(int capacity = 64)
         {
             Count = 0;
+            if (capacity > max_capacity)
+                throw new QueueOverflowException();
             queue_capacity = capacity;
             front = 0;
             rear = capacity - 1;

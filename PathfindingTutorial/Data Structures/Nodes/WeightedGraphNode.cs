@@ -23,5 +23,11 @@ namespace PathfindingTutorial.Data_Structures
             EdgeWeights.Add(neighbor, weight);
         }
 
+        public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight)
+        {
+            AddNeighbor(neighbor, weight);
+            neighbor.AddNeighbor(this, weight);
+        }
+
     }
 }

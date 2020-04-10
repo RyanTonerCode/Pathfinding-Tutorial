@@ -25,11 +25,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public int CompareTo(object obj)
         {
-            if (obj is WeightedNodePath<T> cast)
-            {
-                //lower values will return higher
+            if (obj is WeightedNodePath<T> cast) //in this order, lower values will return positive
                 return cast.PathWeightToHere.CompareTo(PathWeightToHere);
-            }
             throw new NotImplementedException();
         }
     }

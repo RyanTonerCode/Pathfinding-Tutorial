@@ -109,7 +109,7 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
-        public NodePath<T> RunDjikstra(WeightedGraphNode<T> Start, WeightedGraphNode<T> End)
+        public WeightedNodePath<T> RunDijkstra(WeightedGraphNode<T> Start, WeightedGraphNode<T> End)
         {
             IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
 
@@ -133,9 +133,9 @@ namespace PathfindingTutorial.Data_Structures
                     if (!found.Contains((WeightedGraphNode<T>)neighbor))
                     { //unmarked neighbor
 
-                        double next_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
 
-                        double new_weight = cur.PathWeightToHere + next_weight;
+                        double new_weight = cur.PathWeightToHere + edge_weight;
 
                         priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight));
                     }

@@ -8,11 +8,13 @@ namespace PathfindingTutorial.Data_Structures
     {
         private readonly List<T> heapData;  //list of heap elements
         private int lastIndex;              // index of last element in priority queue
-        private int queue_capacity;      // index of last position in ArrayList
+        private int queue_capacity;         // index of last position in ArrayList
         private const int max_capacity = 100000;
 
         public Heap(int capacity)
         {
+            if (capacity > max_capacity)
+                throw new QueueOverflowException();
             heapData = new List<T>(capacity);
             lastIndex = -1;
             queue_capacity = capacity;

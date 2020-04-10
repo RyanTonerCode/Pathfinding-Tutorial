@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using PathfindingTutorial.Data_Structures;
 
 namespace PathfindingTutorial
@@ -11,20 +10,20 @@ namespace PathfindingTutorial
         {
             //demo the different between a stack and queue
             //set the default capacity to 4 (this is to check that scaling works)
-            Stack<int> test_stack = new Stack<int>(4);
-            Queue<int> test_queue = new Queue<int>(4);
+            IGraphSearcher<int> test_stack = new Stack<int>(4);
+            IGraphSearcher<int> test_queue = new Queue<int>(4);
 
             for (int i = 0; i < 100; i++)
             {
-                test_stack.Push(i);
-                test_queue.Enqueue(i);
+                test_stack.Add(i);
+                test_queue.Add(i);
             }
 
             //show the difference between stacks and queues
             while (!test_stack.IsEmpty() && !test_queue.IsEmpty())
             {
-                int from_stack = test_stack.Pop();
-                int from_queue = test_queue.Dequeue();
+                int from_stack = test_stack.Remove();
+                int from_queue = test_queue.Remove();
                 Console.WriteLine("Stack {0}, Queue {1}", from_stack, from_queue);
             }
 
@@ -59,9 +58,6 @@ namespace PathfindingTutorial
             IGraphNode<char>.AddMutualNeighbor(A, B);
 
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
-
-
-
             Graph<char> a_graph = new Graph<char>(nodes);
 
 
@@ -113,104 +109,61 @@ namespace PathfindingTutorial
 
         }
 
-        static (WeightedGraphNode<string>[][], char[][]) makeGrid30x30()
+        static void MakeWeightedGraph()
         {
-            //Make a 100x100 grid where even columns have two barriers of equal height 35 with the space between them vertically centered
-            //And connect the whitespace
-            WeightedGraphNode<string>[][] grid = new WeightedGraphNode<string>[30][];
-            char[][] gridPath = new char[grid.Length][];
-            for (int i = 0; i < grid.Length; i++)
-            {
-                grid[i] = new WeightedGraphNode<string>[30];
-                gridPath[i] = new char[grid[i].Length];
-                for (int j = 0; j < grid[i].Length; j++)
-                {
-                    grid[i][j] = new WeightedGraphNode<string>(i + "," + j);
-                    if (i % 2 != 0) //if we are on an odd column and there is a row above us, connect the node above us
-                    {
-                        if (j > 0 && j < grid[i].Length - 1 && i < grid.Length - 2)
-                        {
-                            grid[i][j].AddNeighbor(grid[i][j - 1], 2);
-                            grid[i][j-1].AddNeighbor(grid[i][j],100);
-                            gridPath[i][j] = 'Y';
-                        }
-                    }
-                    if (j == 1 || j == 15 || j == 28) //if we are on the top or bottom row and there is a column before us, connect the node before us
-                    {
-                        if (i > 0 && i < grid.Length - 2)
-                        {
-                            grid[i][j].AddNeighbor(grid[i - 1][j],1);
-                            grid[i-1][j].AddNeighbor(grid[i][j],1);
-                            gridPath[i][j] = 'Y';
-                        }
-                    }
-                }
-            }
-            return (grid, gridPath);
-        }
+            WeightedGraphNode<char> A = new WeightedGraphNode<char>('A');
+            WeightedGraphNode<char> B = new WeightedGraphNode<char>('B');
+            WeightedGraphNode<char> C = new WeightedGraphNode<char>('C');
+            WeightedGraphNode<char> D = new WeightedGraphNode<char>('D');
+            WeightedGraphNode<char> E = new WeightedGraphNode<char>('E');
+            WeightedGraphNode<char> F = new WeightedGraphNode<char>('F');
+            WeightedGraphNode<char> G = new WeightedGraphNode<char>('G');
 
-        static void anotherGraph()
-        {
+            A.AddMutualNeighbor(B, 4);
+            A.AddMutualNeighbor(G, 2);
+            A.AddMutualNeighbor(D, 3);
 
-            var gridData = makeGrid30x30();
-            WeightedGraphNode<string>[][] grid = gridData.Item1;
-            char[][] gridPath = gridData.Item2;
+            B.AddMutualNeighbor(D, 6);
+            B.AddMutualNeighbor(G, 8);
 
-            WeightedGraphNode<string>[] nodes = new WeightedGraphNode<string>[grid.Length * grid[0].Length]; //convert the grid to an array for pathfinding
-            for (int i = 0; i < grid.Length; i++)
-            {
-                for (int j = 0; j < grid[i].Length; j++)
-                {
-                    nodes[(i * grid.Length) + j] = grid[i][j];
-                }
-            }
+            C.AddMutualNeighbor(D, 6);
+            C.AddMutualNeighbor(E, 4);
 
-            Graph<string> a_graph = new Graph<string>(nodes); //convert array to graph object
-            var path = a_graph.RunDjikstra(grid[1][5], grid[25][20]);
+            E.AddMutualNeighbor(F, 3);
+
+            F.AddMutualNeighbor(G, 5);
+
+            GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
+            Graph<char> a_graph = new Graph<char>(nodes);
+
+            Console.WriteLine("Finding the shorting path between B and D");
+            var path = a_graph.RunDijkstra(B,E);
+
             if (path == null)
-                Console.WriteLine("Nope :( \n");
+                Console.WriteLine("Nope :(");
             else
             {
-                Console.WriteLine("Success! :) \n");
-                printGrid(grid, gridPath, path);
-            }
-        }
-        static void printGrid(GraphNode<string>[][] grid, char[][] gridPath, NodePath<string> path)
-        {
-            StringBuilder output = new StringBuilder();
+                Console.WriteLine("\n The shortest path has weight {0} ", path.PathWeightToHere);
 
-            string[] route = new string[100000];
-            for (int a = 0; path != null; a++)
-            {
-                route[a] = (path.Node.GetValue());
-                path = path.Parent;
-            }
+                //use a stack to figure out the order to take
+                var reverse_backtracking = new Stack<NodePath<char>>();
 
-            output.Append("    ");
-            for (int i = 0; i < grid[0].Length; i++)
-            {
-                output.Append(" " + i + (i < 10 ? " " : ""));
-            }
-            output.Append("\n");
-
-            for (int j = 0; j < grid.Length; j++)
-            {
-                output.Append(" " + j + (j < 10 ? "  " : " "));
-                for (int i = 0; i < grid[j].Length; i++)
+                while (path != null)
                 {
-                    string cordos = i + "," + j;
-                    if (Array.Exists(route, element => element == cordos))
-                    {
-                        output.Append(" ¤ ");
-                    }
-                    else
-                    {
-                        output.Append(gridPath[i][j] == 'Y' ? "   " : "███");
-                    }
+                    reverse_backtracking.Add(path);
+                    path = (WeightedNodePath<char>)path.Parent;
                 }
-                output.Append("\n");
+
+                while (!reverse_backtracking.IsEmpty())
+                {
+                    var top = reverse_backtracking.Pop();
+                    Console.Write("{0}", top.Node.GetValue());
+                    if (reverse_backtracking.Count > 0)
+                        Console.Write(" -> ");
+                }
+
+                Console.WriteLine("\n-------------------------------\n");
             }
-            Console.Write(output);
         }
 
 
@@ -218,7 +171,7 @@ namespace PathfindingTutorial
         {
             //StackVsQueue();
             //MakeGraph();
-            anotherGraph();
+            MakeWeightedGraph();
 
             Console.ReadLine();
         }
