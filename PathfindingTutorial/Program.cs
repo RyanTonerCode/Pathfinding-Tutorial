@@ -192,47 +192,63 @@ namespace PathfindingTutorial
             for (int i = 0; i < grid.GetLength(0); i++)
                 for (int j = 0; j < grid.GetLength(1); j++)
                 {
-                    try
-                    {
-                        if (grid[i, j].GetValue().Equals(" ") && grid[i + 1, j].GetValue().Equals(" "))
-                            grid[i, j].AddMutualNeighbor(grid[i + 1, j], 1); //make the cost of going down high
-                        if (grid[i, j].GetValue().Equals(" ") && grid[i, j + 1].GetValue().Equals(" "))
-                            grid[i, j].AddMutualNeighbor(grid[i, j + 1], 1);
-                    }
-                    catch (Exception) { }
+                    if (i + 1 < grid.GetLength(0) && grid[i, j].GetValue().Equals(" ") && grid[i + 1, j].GetValue().Equals(" "))
+                        grid[i, j].AddMutualNeighbor(grid[i + 1, j], 1); //make the cost of going down high
+                    if (j + 1 < grid.GetLength(1) && grid[i, j].GetValue().Equals(" ") && grid[i, j + 1].GetValue().Equals(" "))
+                        grid[i, j].AddMutualNeighbor(grid[i, j + 1], 1);
                 }
+
+            void ShowMazeSolution(NodePath<string> final)
+            {
+                Console.WriteLine("Solved the maze with path length of {0}", final.PathLength);
+
+                var backtracking = new Stack<NodePath<string>>();
+
+                while (final != null)
+                {
+                    backtracking.Push(final);
+                    final = final.Parent;
+                }
+
+                while (!backtracking.IsEmpty())
+                    backtracking.Pop().Node.SetValue("x");
+
+                PrintGrid(grid);
+
+                foreach(var t in grid)
+                {
+                    if (t.GetValue().Equals("x"))
+                        t.SetValue(" ");
+                }
+            }
+
 
             var graph = new Graph<string>(grid);
 
-            NodePath<string> final = graph.RunDijkstra(grid[1, 0], grid[19, 45]);
+            var finalDFS = graph.RunDFS(grid[1, 0], grid[19, 45]);
 
-            var backtracking = new Stack<NodePath<string>>();
-            while(final != null)
-            {
-                backtracking.Push(final);
-                final = final.Parent;
-            }
+            ShowMazeSolution(finalDFS);
 
-            Console.WriteLine("Solved the maze with path length of {0}", backtracking.Count);
+            graph = new Graph<string>(grid);
 
-            while (!backtracking.IsEmpty())
-            {
-                var top = backtracking.Pop();
+            var finalDijkstra = graph.RunDijkstra(grid[1, 0], grid[19, 45]);
 
-                top.Node.SetValue("x");
-            }
+            ShowMazeSolution(finalDijkstra);
 
-            PrintGrid(grid);
         }
+
+
 
         static void PrintGrid(WeightedGraphNode<string>[,] grid)
         {
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < grid.GetLength(0); i++)
             {
-                Console.WriteLine();
+                sb.AppendLine();
                 for (int j = 0; j < grid.GetLength(1); j++)
-                    Console.Write(grid[i,j].GetValue());
+                    sb.Append(grid[i,j].GetValue());
             }
+            Console.WriteLine(sb);
         }
 
         static void SolvePuzzle(bool IsGreedy, bool print = false)

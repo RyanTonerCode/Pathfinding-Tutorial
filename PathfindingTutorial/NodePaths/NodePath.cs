@@ -11,11 +11,13 @@ namespace PathfindingTutorial.Data_Structures
         public NodePath(IGraphNode<T> n)
         {
             Node = n;
+            PathLength = 0;
         }
         public NodePath(IGraphNode<T> n, NodePath<T> par)
         {
             Node = n;
             Parent = par;
+            PathLength = 0;
         }
         public NodePath(IGraphNode<T> n, NodePath<T> par, int pathLength)
         {

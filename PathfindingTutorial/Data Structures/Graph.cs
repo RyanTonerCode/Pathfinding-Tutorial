@@ -53,7 +53,7 @@ namespace PathfindingTutorial.Data_Structures
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
                     if (!marked.Contains(neighbor))
-                        stk.Push(new NodePath<T>(neighbor, cur));
+                        stk.Push(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
             }
 
             return null;
@@ -82,7 +82,7 @@ namespace PathfindingTutorial.Data_Structures
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
                     if (!marked.Contains(neighbor)) //unmarked neighbor
-                        stk.Enqueue(new NodePath<T>(neighbor, cur));
+                        stk.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
             }
 
             return null;
@@ -110,7 +110,7 @@ namespace PathfindingTutorial.Data_Structures
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
                     if (!marked.Contains(neighbor)) //unmarked neighbor
-                        dataStructure.Add(new NodePath<T>(neighbor, cur));
+                        dataStructure.Add(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
             }
 
             return null;
@@ -149,7 +149,7 @@ namespace PathfindingTutorial.Data_Structures
 
                         double new_weight = cur.PathWeightToHere + edge_weight;
 
-                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight));
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
                     }
             }
 
