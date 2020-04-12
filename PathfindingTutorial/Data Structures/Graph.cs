@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -32,7 +31,7 @@ namespace PathfindingTutorial.Data_Structures
 
             stk.Push(begin);
 
-            HashSet<IGraphNode<T>> found = new HashSet<IGraphNode<T>>();
+            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
 
             while (stk.Count > 0)
             {
@@ -41,11 +40,11 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
-                found.Add(cur.Node);
+                marked.Add(cur.Node);
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
-                    if (!found.Contains(neighbor))
+                    if (!marked.Contains(neighbor))
                         stk.Push(new NodePath<T>(neighbor, cur));
             }
 
@@ -61,7 +60,7 @@ namespace PathfindingTutorial.Data_Structures
             stk.Enqueue(begin);
 
             //this is our "marked" set
-            HashSet<IGraphNode<T>> found = new HashSet<IGraphNode<T>>();
+            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
 
             while (stk.Count > 0)
             {
@@ -70,11 +69,11 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
-                found.Add(cur.Node);
+                marked.Add(cur.Node);
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
-                    if (!found.Contains(neighbor)) //unmarked neighbor
+                    if (!marked.Contains(neighbor)) //unmarked neighbor
                         stk.Enqueue(new NodePath<T>(neighbor, cur));
             }
 
@@ -89,7 +88,7 @@ namespace PathfindingTutorial.Data_Structures
             dataStructure.Add(begin);
 
             //this is our "marked" set
-            HashSet<IGraphNode<T>> found = new HashSet<IGraphNode<T>>();
+            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
 
             while (!dataStructure.IsEmpty())
             {
@@ -98,11 +97,11 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
-                found.Add(cur.Node);
+                marked.Add(cur.Node);
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
-                    if (!found.Contains(neighbor)) //unmarked neighbor
+                    if (!marked.Contains(neighbor)) //unmarked neighbor
                         dataStructure.Add(new NodePath<T>(neighbor, cur));
             }
 
@@ -117,7 +116,7 @@ namespace PathfindingTutorial.Data_Structures
             priQueue.Enqueue(begin);
 
             //this is our "marked" set
-            HashSet<WeightedGraphNode<T>> found = new HashSet<WeightedGraphNode<T>>();
+            HashSet<WeightedGraphNode<T>> marked = new HashSet<WeightedGraphNode<T>>();
 
             while (!priQueue.IsEmpty())
             {
@@ -126,11 +125,16 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
-                found.Add((WeightedGraphNode<T>)cur.Node);
+                var wgn = (WeightedGraphNode<T>)cur.Node;
+
+                if (marked.Contains(wgn))
+                    continue;
+
+                marked.Add(wgn);
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
-                    if (!found.Contains((WeightedGraphNode<T>)neighbor))
+                    if (!marked.Contains((WeightedGraphNode<T>)neighbor))
                     { //unmarked neighbor
 
                         double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];

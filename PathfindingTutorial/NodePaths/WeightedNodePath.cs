@@ -9,16 +9,17 @@ namespace PathfindingTutorial.Data_Structures
         /// </summary>
         public double PathWeightToHere { get; private set; }
 
-        public WeightedNodePath(IGraphNode<T> n) : base(n)
-        {
-            PathWeightToHere = 0;
-        }
         public WeightedNodePath(IGraphNode<T> n, NodePath<T> par) : base(n,par)
         {
             PathWeightToHere = 0;
         }
 
         public WeightedNodePath(IGraphNode<T> n, NodePath<T> par, double weight) : base(n, par)
+        {
+            PathWeightToHere = weight;
+        }
+
+        public WeightedNodePath(IGraphNode<T> n, NodePath<T> par, double weight, int pathLength) : base(n, par, pathLength)
         {
             PathWeightToHere = weight;
         }

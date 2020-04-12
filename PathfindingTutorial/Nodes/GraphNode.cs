@@ -12,7 +12,7 @@ namespace PathfindingTutorial.Data_Structures
             this.value = value;
         }
 
-        public List<IGraphNode<T>> GetNeighbors()
+        public virtual List<IGraphNode<T>> GetNeighbors()
         {
             return neighbors;
         }

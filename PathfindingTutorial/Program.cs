@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Text;
 using PathfindingTutorial.Data_Structures;
+using PathfindingTutorial.Puzzle;
 
 namespace PathfindingTutorial
 {
@@ -121,10 +124,10 @@ namespace PathfindingTutorial
 
             A.AddMutualNeighbor(B, 4);
             A.AddMutualNeighbor(G, 2);
-            A.AddMutualNeighbor(D, 3);
+            A.AddMutualNeighbor(D, 1 );
 
             B.AddMutualNeighbor(D, 6);
-            B.AddMutualNeighbor(G, 8);
+            B.AddMutualNeighbor(G, 9);
 
             C.AddMutualNeighbor(D, 6);
             C.AddMutualNeighbor(E, 4);
@@ -136,7 +139,7 @@ namespace PathfindingTutorial
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
             Graph<char> a_graph = new Graph<char>(nodes);
 
-            Console.WriteLine("Finding the shorting path between B and D");
+            Console.WriteLine("Finding the shorting path between B and E");
             var path = a_graph.RunDijkstra(B,E);
 
             if (path == null)
@@ -166,12 +169,52 @@ namespace PathfindingTutorial
             }
         }
 
+        static void SolvePuzzle(bool print = false)
+        {
+            Debug.WriteLine("GO");
+
+            GameBoard gb = new GameBoard(3, 3);
+
+            var str = gb.ToString();
+
+            NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb);
+
+            if(solution == null && print)
+            {
+                Console.WriteLine("Could not find a solution!");
+                return;
+            }
+
+            Stack<NodePath<GameBoard>> stk = new Stack<NodePath<GameBoard>>();
+
+            while (solution != null)
+            {
+                stk.Add(solution);
+                solution = solution.Parent;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            while (!stk.IsEmpty())
+            {
+                var top = stk.Pop().Node;
+                if(print)
+                    sb.Append(top.GetValue()).AppendLine();
+            }
+
+            if (print)
+                Console.WriteLine(print);
+            
+        }
 
         static void Main(string[] args)
         {
             //StackVsQueue();
             //MakeGraph();
-            MakeWeightedGraph();
+            //MakeWeightedGraph();
+            for(int i = 0; i < 5000; i++)
+                SolvePuzzle();
+            
 
             Console.ReadLine();
         }
