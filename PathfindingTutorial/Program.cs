@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text;
 using PathfindingTutorial.Data_Structures;
 using PathfindingTutorial.Puzzle;
@@ -169,13 +168,14 @@ namespace PathfindingTutorial
             }
         }
 
-        static void SolvePuzzle(bool print = false)
+        static void SolvePuzzle(bool IsGreedy, bool print = false)
         {
             GameBoard gb = new GameBoard(3, 3);
 
-            NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb);
+            NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb, IsGreedy);
+            //NodePath<GameBoard> solution2 = PuzzleSolver.A_Star_Search(gb, !IsGreedy);
 
-            if(solution == null && print)
+            if (solution == null && print)
             {
                 Console.WriteLine("Could not find a solution!");
                 return;
@@ -209,9 +209,9 @@ namespace PathfindingTutorial
             //MakeGraph();
             //MakeWeightedGraph();
 
-            int numTrials = 1;
+            int numTrials = 250;
             for (int i = 0; i < numTrials; i++)
-                SolvePuzzle(true);
+                SolvePuzzle(false, numTrials == 1);
             
 
             Console.ReadLine();

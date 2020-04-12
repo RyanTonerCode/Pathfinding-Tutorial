@@ -11,13 +11,13 @@ namespace PathfindingTutorial.Puzzle
         /// </summary>
         /// <param name="initial_state"></param>
         /// <returns></returns>
-        public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state)
+        public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state, bool IsGreedy)
         {
             IPriorityQueue<WeightedNodePath<GameBoard>> priQueue = new Heap<WeightedNodePath<GameBoard>>(2000);
 
             WeightedGraphNode<GameBoard> starting_path = new WeightedGraphNode<GameBoard>(initial_state);
 
-            var foundBoards = new HashSet<ulong>();
+            var foundBoards = new HashSet<uint>();
 
             var Start = new WeightedNodePath<GameBoard>(starting_path, null, 0);
             priQueue.Enqueue(Start);
@@ -36,18 +36,28 @@ namespace PathfindingTutorial.Puzzle
                 }
 
                 //add to marked
-                foundBoards.Add(top_gb.HashValue());
+                foundBoards.Add(top_gb.GetHashValue());
 
                 int nextPathLength = cur.PathLength + 1;
 
                 //add all new nodes to the stack
                 foreach (var neighbor in top_gb.GetAllNeighborBoards())
                 {
-                    if (foundBoards.Contains(neighbor.HashValue()))
+                    if (foundBoards.Contains(neighbor.GetHashValue()))
                         continue;
 
-                    //weight = h(x) + g(x)
-                    double new_weight = neighbor.GetSigmaManhattanDistance() + nextPathLength;
+                    double new_weight;
+
+                    if (IsGreedy)
+                    {
+                        //weight ~= h(x)
+                        new_weight = neighbor.GetSigmaManhattanDistance();
+                    }
+                    else
+                    {
+                        //weight = h(x) + g(x)
+                        new_weight = neighbor.GetSigmaManhattanDistance() + nextPathLength;
+                    }
 
                     var n_wgn = new WeightedGraphNode<GameBoard>(neighbor);
 

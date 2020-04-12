@@ -46,8 +46,8 @@ namespace PathfindingTutorial.Puzzle
             this.Width = Width;
             this.Height = Height;
             Tiles = new Tile[Height * Width];
-            for (int i = 0; i < oldBoard.Length; i++)
-                Tiles[i] = oldBoard[i].Clone(); //generate a deep-copy of the old board
+            //this will create references from the new board back to the old.
+            Array.Copy(oldBoard, Tiles, oldBoard.Length);
         }
 
         /// <summary>
@@ -103,6 +103,10 @@ namespace PathfindingTutorial.Puzzle
                 GameBoard gb = new GameBoard(Width, Height, Tiles);
 
                 int tileLocNum = GetLocNum(X, Y);
+
+                //make sure to clone the values that need updating, since they need new aliases
+                gb.Tiles[blankLocation] = gb.Tiles[blankLocation].Clone();
+                gb.Tiles[tileLocNum] = gb.Tiles[tileLocNum].Clone();
 
                 gb.Tiles[blankLocation].SetValue(gb.Tiles[tileLocNum].Value);
                 gb.Tiles[tileLocNum].SetValue(0);
@@ -286,18 +290,31 @@ namespace PathfindingTutorial.Puzzle
         }
 
 
-        private ulong hashValue = 0;
+        private uint hashValue = 0;
 
         /// <summary>
         /// An optimized hash of this board that encodes the location of each tile
         /// </summary>
-        public ulong HashValue()
+        public uint GetHashValue()
         {
             if (hashValue != 0)
                 return hashValue;
 
+            /* Tile values are from 0-8 for 3x3 board, so need
+             * 000
+             * 001
+             * 010
+             * 011
+             * 100
+             * 101
+             * 110
+             * 111
+             * So, need 3 bits per tile. 3 * 9 = 27.
+             * This will fit inside of unit = 32 bits.
+             */
+
             foreach(Tile t in Tiles)
-                hashValue = (hashValue << 4) + (ulong)t.Value;
+                hashValue = (hashValue << 3) + (uint)t.Value;
             return hashValue;
         }
 
