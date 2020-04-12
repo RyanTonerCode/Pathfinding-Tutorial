@@ -1,16 +1,19 @@
-﻿
-using PathfindingTutorial.Data_Structures;
+﻿using PathfindingTutorial.Data_Structures;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PathfindingTutorial.Puzzle
 {
     public static class PuzzleSolver
     {
+        /// <summary>
+        /// Runs an A* search to solve the board using manhattan distance as the heuristic function.
+        /// </summary>
+        /// <param name="initial_state"></param>
+        /// <returns></returns>
         public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state)
         {
-            IPriorityQueue<WeightedNodePath<GameBoard>> priQueue = new Heap<WeightedNodePath<GameBoard>>(1000);
+            IPriorityQueue<WeightedNodePath<GameBoard>> priQueue = new Heap<WeightedNodePath<GameBoard>>(2000);
 
             WeightedGraphNode<GameBoard> starting_path = new WeightedGraphNode<GameBoard>(initial_state);
 
@@ -43,11 +46,12 @@ namespace PathfindingTutorial.Puzzle
                     if (foundBoards.Contains(neighbor.HashValue()))
                         continue;
 
-                    double weight = neighbor.GetSumManhattanDistance() + nextPathLength;
+                    //weight = h(x) + g(x)
+                    double new_weight = neighbor.GetSigmaManhattanDistance() + nextPathLength;
 
                     var n_wgn = new WeightedGraphNode<GameBoard>(neighbor);
 
-                    priQueue.Enqueue(new WeightedNodePath<GameBoard>(n_wgn, cur, weight, nextPathLength));
+                    priQueue.Enqueue(new WeightedNodePath<GameBoard>(n_wgn, cur, new_weight, nextPathLength));
                 }
 
                 if (priQueue.IsEmpty())

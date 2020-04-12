@@ -5,6 +5,9 @@ using System.Text;
 
 namespace PathfindingTutorial.Puzzle 
 {
+    /// <summary>
+    /// Board for n^2 -1 Puzzle
+    /// </summary>
     public class GameBoard
     {
         private static readonly Random Randy = new Random();
@@ -12,6 +15,9 @@ namespace PathfindingTutorial.Puzzle
         public int Width { get; private set; }  //number of columns
         public int Height { get; private set; } //number of rows
 
+        /// <summary>
+        /// Tiles stored in order from left to right for each row
+        /// </summary>
         private readonly Tile[] Tiles;
 
         private int blankLocation; //where the blank tile is in the array
@@ -19,6 +25,13 @@ namespace PathfindingTutorial.Puzzle
         public Tile GetTile(int X, int Y) => Tiles[GetLocNum(X,Y)];
 
         public int GetLocNum(int X, int Y) => X + Width * Y;
+
+        public (int X, int Y) GetGridVal(int LocNum)
+        {
+            int col = LocNum % Width;
+            int row = (LocNum - col) / Height;
+            return (col, row);
+        }
 
         public GameBoard(int Width, int Height)
         {
@@ -37,7 +50,11 @@ namespace PathfindingTutorial.Puzzle
                 Tiles[i] = oldBoard[i].Clone(); //generate a deep-copy of the old board
         }
 
-        public int GetSumManhattanDistance()
+        /// <summary>
+        /// Returns the sum of the manhattan distance for all non-blank tiles on the board
+        /// </summary>
+        /// <returns></returns>
+        public int GetSigmaManhattanDistance()
         {
             int sum = 0;
             foreach(Tile t in Tiles) {
@@ -45,12 +62,10 @@ namespace PathfindingTutorial.Puzzle
                 if (t.IsBlank)
                     continue;
 
-                int tileExpectedValue = t.Value - 1;
-                if (tileExpectedValue == -1)
-                    tileExpectedValue = Tiles.Length - 1;
+                int tileExpectedLocNum = t.Value - 1;
 
                 //coordinate of where this value should be
-                (int X, int Y) = GetGridVal(tileExpectedValue);
+                (int X, int Y) = GetGridVal(tileExpectedLocNum);
 
 
                 //sum MD for all non-blank tiles
@@ -59,7 +74,7 @@ namespace PathfindingTutorial.Puzzle
             return sum;
         }
 
-        public bool IsSolved => GetSumManhattanDistance() == 0;
+        public bool IsSolved => GetSigmaManhattanDistance() == 0;
 
         public List<GameBoard> GetAllNeighborBoards()
         {
@@ -89,8 +104,8 @@ namespace PathfindingTutorial.Puzzle
 
                 int tileLocNum = GetLocNum(X, Y);
 
-                gb.Tiles[blankLocation].Value = gb.Tiles[tileLocNum].Value;
-                gb.Tiles[tileLocNum].Value = 0;
+                gb.Tiles[blankLocation].SetValue(gb.Tiles[tileLocNum].Value);
+                gb.Tiles[tileLocNum].SetValue(0);
 
                 //set new blank location
                 gb.blankLocation = tileLocNum;
@@ -102,28 +117,33 @@ namespace PathfindingTutorial.Puzzle
             return null;
         }
         
-        //List of all possible directions of neighbors (right, left, up, down)
+        //List of all possible directions of neighbors (right, left, up, down) relative to the blank tile.
         private static readonly List<(int X, int Y)> Neighbors = new List<(int, int)> { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
 
-        public void GenerateBoard(bool Random = false)
+        /// <summary>
+        /// Generate a valid board configuration.
+        /// </summary>
+        /// <param name="Random"></param>
+        /// <param name="debug_print"></param>
+        public void GenerateBoard(bool Random = false, bool debug_print = false)
         {
 
             if (!Random)
             #region Predefined Board
             {
-                    int[] list = { 0 };
+                int[] list = { 0 };
 
-                    int count = 0;
-                    for (int i = 0; i < Height; i++)
+                int count = 0;
+                for (int i = 0; i < Height; i++)
+                {
+                    for (int j = 0; j < Width; j++)
                     {
-                        for (int j = 0; j < Width; j++)
-                        {
-                            Tiles[count] = new Tile(list[i], j, i);
-                            count++;
-                        }
+                        Tiles[count] = new Tile(list[i], j, i);
+                        count++;
                     }
-                    return;
+                }
+                return;
 
                 #endregion
             }
@@ -184,12 +204,15 @@ namespace PathfindingTutorial.Puzzle
             //width % 2 == 0 => (blank on even row from bottom => inversion % 2 == 1)
             //width % 2 == 0 => (blank on odd row from bottom => inversion % 2 == 0)
 
-            Debug.WriteLine("Current Board State:");
-            Debug.WriteLine(this);
+            if (debug_print) {
+                Debug.WriteLine("Current Board State:");
+                Debug.WriteLine(this);
+            }
 
             if (!validBoard(blankevenfrombottom))
             { //false (impossible to solve)
-                Debug.WriteLine("Generated a bad state. Swapping now.");
+                if(debug_print)
+                    Debug.WriteLine("Generated a bad state. Swapping now.");
                 //greedily swap something
                 for (int i = 0; i < Width * Height - 1; i++)
                 {
@@ -202,12 +225,15 @@ namespace PathfindingTutorial.Puzzle
                         {
                             int val1 = Tiles[i + 1].Value;
 
-                            Tiles[i + 1].Value = Tiles[i].Value;
-                            Tiles[i].Value = val1;
-                            //swap them
-                            Debug.WriteLine("Swapped");
-                            print = null;
-                            Debug.WriteLine(this);
+                            Tiles[i + 1].SetValue(Tiles[i].Value);
+                            Tiles[i].SetValue(val1);
+                            if (debug_print)
+                            {
+                                //swap them
+                                Debug.WriteLine("Swapped");
+                                print = null;
+                                Debug.WriteLine(this);
+                            }
 
                             break;
                         }
@@ -226,6 +252,10 @@ namespace PathfindingTutorial.Puzzle
 
         string print;
 
+        /// <summary>
+        /// Pretty-prints the board
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             if (print != null)
@@ -255,36 +285,42 @@ namespace PathfindingTutorial.Puzzle
             return print;
         }
 
+
+        private ulong hashValue = 0;
+
+        /// <summary>
+        /// An optimized hash of this board that encodes the location of each tile
+        /// </summary>
         public ulong HashValue()
         {
-            ulong hashValue = 0;
+            if (hashValue != 0)
+                return hashValue;
+
             foreach(Tile t in Tiles)
                 hashValue = (hashValue << 4) + (ulong)t.Value;
             return hashValue;
         }
 
-        private bool validBoard(bool blankevenfrombottom) {
-            //need to check inversions....
+        /// <summary>
+        /// Returns whether or not this is a valid board configuration.
+        /// </summary>
+        /// <param name="blankEvenRowFromBottom"></param>
+        /// <returns></returns>
+        private bool validBoard(bool blankEvenRowFromBottom) {
             int inversionCount = 0;
 
             for (int check = 0; check < Width * Height - 1; check++) //no need to consider last tile.
-                for (int checkinversions = check + 1; checkinversions < Width * Height; checkinversions++)
-                    if (!(Tiles[check].IsBlank || Tiles[checkinversions].IsBlank) && //don't count inversions for/with blank.
+                for (int checkinversions = check + 1; checkinversions < Width * Height; checkinversions++) //iterate through all subsequent tiles
+                    if (!(Tiles[check].IsBlank || Tiles[checkinversions].IsBlank) && //ignore blank tile if found
                         Tiles[check].Value > Tiles[checkinversions].Value)
                         inversionCount++;
 
             return (
                 Width % 2 == 1 && inversionCount % 2 == 0 ||
-                Width % 2 == 0 && !blankevenfrombottom && inversionCount % 2 == 0 ||
-                Width % 2 == 0 && blankevenfrombottom && inversionCount % 2 == 1);
+                Width % 2 == 0 && !blankEvenRowFromBottom && inversionCount % 2 == 0 ||
+                Width % 2 == 0 && blankEvenRowFromBottom && inversionCount % 2 == 1);
         }
 
-        public (int X, int Y) GetGridVal(int LocNum)
-        {
-            int col = LocNum % Width;
-            int row = (LocNum - col) / Height;
-            return (col, row);
-        }
 
     }
 }
