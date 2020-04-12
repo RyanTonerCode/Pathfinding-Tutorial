@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using System.Resources;
 using System.Text;
 using PathfindingTutorial.Data_Structures;
 using PathfindingTutorial.Puzzle;
@@ -168,6 +170,71 @@ namespace PathfindingTutorial
             }
         }
 
+        static void MakeMaze()
+        {
+            //some flavor of grid demo, variable path weights, barriers, etc
+
+            WeightedGraphNode<string>[,] grid = new WeightedGraphNode<string>[21,46];
+
+            string maze = Properties.Resources.Maze;
+
+            int iter = 0;
+            for (int i = 0; i < grid.GetLength(0); i++)
+                for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    while (maze[iter] == '\r' || maze[iter] == '\n')
+                        iter++;
+                    grid[i, j] = new WeightedGraphNode<string>(maze[iter].ToString());
+                    iter++;
+                }
+
+
+            for (int i = 0; i < grid.GetLength(0); i++)
+                for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    try
+                    {
+                        if (grid[i, j].GetValue().Equals(" ") && grid[i + 1, j].GetValue().Equals(" "))
+                            grid[i, j].AddMutualNeighbor(grid[i + 1, j], 1); //make the cost of going down high
+                        if (grid[i, j].GetValue().Equals(" ") && grid[i, j + 1].GetValue().Equals(" "))
+                            grid[i, j].AddMutualNeighbor(grid[i, j + 1], 1);
+                    }
+                    catch (Exception) { }
+                }
+
+            var graph = new Graph<string>(grid);
+
+            NodePath<string> final = graph.RunDijkstra(grid[1, 0], grid[19, 45]);
+
+            var backtracking = new Stack<NodePath<string>>();
+            while(final != null)
+            {
+                backtracking.Push(final);
+                final = final.Parent;
+            }
+
+            Console.WriteLine("Solved the maze with path length of {0}", backtracking.Count);
+
+            while (!backtracking.IsEmpty())
+            {
+                var top = backtracking.Pop();
+
+                top.Node.SetValue("x");
+            }
+
+            PrintGrid(grid);
+        }
+
+        static void PrintGrid(WeightedGraphNode<string>[,] grid)
+        {
+            for (int i = 0; i < grid.GetLength(0); i++)
+            {
+                Console.WriteLine();
+                for (int j = 0; j < grid.GetLength(1); j++)
+                    Console.Write(grid[i,j].GetValue());
+            }
+        }
+
         static void SolvePuzzle(bool IsGreedy, bool print = false)
         {
             GameBoard gb = new GameBoard(3, 3);
@@ -209,10 +276,13 @@ namespace PathfindingTutorial
             //MakeGraph();
             //MakeWeightedGraph();
 
+            /*
             int numTrials = 250;
             for (int i = 0; i < numTrials; i++)
                 SolvePuzzle(false, numTrials == 1);
-            
+            */
+
+            MakeMaze();
 
             Console.ReadLine();
         }

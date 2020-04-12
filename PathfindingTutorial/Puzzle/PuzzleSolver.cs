@@ -10,6 +10,7 @@ namespace PathfindingTutorial.Puzzle
         /// Runs an A* search to solve the board using manhattan distance as the heuristic function.
         /// </summary>
         /// <param name="initial_state"></param>
+        /// <param name="IsGreedy">Whether or not to use greedy best-first search instead of A*.</param>
         /// <returns></returns>
         public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state, bool IsGreedy)
         {

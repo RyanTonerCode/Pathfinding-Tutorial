@@ -13,6 +13,14 @@ namespace PathfindingTutorial.Data_Structures
             graphStructure = new List<IGraphNode<T>>(nodes);
         }
 
+        public Graph(IGraphNode<T>[,] nodes)
+        {
+            graphStructure = new List<IGraphNode<T>>(nodes.Length);
+            foreach (var n in nodes)
+                graphStructure.Add(n);
+            
+        }
+
         public void AddNode(IGraphNode<T> Node)
         {
             graphStructure.Add(Node);
