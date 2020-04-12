@@ -175,8 +175,6 @@ namespace PathfindingTutorial
 
             GameBoard gb = new GameBoard(3, 3);
 
-            var str = gb.ToString();
-
             NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb);
 
             if(solution == null && print)
@@ -203,7 +201,7 @@ namespace PathfindingTutorial
             }
 
             if (print)
-                Console.WriteLine(print);
+                Console.WriteLine(sb);
             
         }
 
@@ -212,7 +210,7 @@ namespace PathfindingTutorial
             //StackVsQueue();
             //MakeGraph();
             //MakeWeightedGraph();
-            for(int i = 0; i < 5000; i++)
+            for(int i = 0; i < 500; i++)
                 SolvePuzzle();
             
 

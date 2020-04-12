@@ -8,15 +8,13 @@ namespace PathfindingTutorial.Puzzle
 {
     public static class PuzzleSolver
     {
-        public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state, bool print = false)
+        public static NodePath<GameBoard> A_Star_Search(GameBoard initial_state)
         {
-            StringBuilder sb = new StringBuilder();
-
             IPriorityQueue<WeightedNodePath<GameBoard>> priQueue = new Heap<WeightedNodePath<GameBoard>>(1000);
 
             WeightedGraphNode<GameBoard> starting_path = new WeightedGraphNode<GameBoard>(initial_state);
 
-            var foundBoards = new HashSet<string>();
+            var foundBoards = new HashSet<ulong>();
 
             var Start = new WeightedNodePath<GameBoard>(starting_path, null, 0);
             priQueue.Enqueue(Start);
@@ -35,14 +33,14 @@ namespace PathfindingTutorial.Puzzle
                 }
 
                 //add to marked
-                foundBoards.Add(top_gb.ToString());
+                foundBoards.Add(top_gb.HashValue());
 
                 int nextPathLength = cur.PathLength + 1;
 
                 //add all new nodes to the stack
                 foreach (var neighbor in top_gb.GetAllNeighborBoards())
                 {
-                    if (foundBoards.Contains(neighbor.ToString()))
+                    if (foundBoards.Contains(neighbor.HashValue()))
                         continue;
 
                     double weight = neighbor.GetSumManhattanDistance() + nextPathLength;

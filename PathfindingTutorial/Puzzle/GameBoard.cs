@@ -123,8 +123,6 @@ namespace PathfindingTutorial.Puzzle
                             count++;
                         }
                     }
-
-
                     return;
 
                 #endregion
@@ -149,7 +147,7 @@ namespace PathfindingTutorial.Puzzle
 
                 if (isBlank)
                 {
-                    blankevenfrombottom = (Height - y-1) % 2 == 0;
+                    blankevenfrombottom = (Height - y) % 2 == 0;
                     blankLocation = t;
                 }
                 Tiles[t++] = new Tile(r, x, y);
@@ -220,7 +218,7 @@ namespace PathfindingTutorial.Puzzle
                 if (!valid)
                 {
                     Debug.WriteLine("Failed to resolve the board. Regenerating.");
-                    GenerateBoard();
+                    GenerateBoard(true);
                 }
 
             }
@@ -255,6 +253,14 @@ namespace PathfindingTutorial.Puzzle
             }
             print = sb.ToString();
             return print;
+        }
+
+        public ulong HashValue()
+        {
+            ulong hashValue = 0;
+            foreach(Tile t in Tiles)
+                hashValue = (hashValue << 4) + (ulong)t.Value;
+            return hashValue;
         }
 
         private bool validBoard(bool blankevenfrombottom) {
