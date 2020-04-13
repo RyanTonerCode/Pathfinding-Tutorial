@@ -1,6 +1,6 @@
-# C# Pathfinding-Tutorial
+# An Introduction to Pathfinding in C#
 
-This tutorial features useful applications of pathfinding algorithms and servers as introduction to pathfinding and graph theory in general.
+This repository features useful applications of pathfinding algorithms and serves as introduction to pathfinding and graph theory in general.
 
 The following algorithms have been implemented in this tutorial:
 1. Breadth-First Search
