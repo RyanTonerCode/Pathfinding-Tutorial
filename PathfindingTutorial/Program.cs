@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using System.Resources;
 using System.Text;
 using PathfindingTutorial.Data_Structures;
 using PathfindingTutorial.Puzzle;
@@ -172,10 +170,10 @@ namespace PathfindingTutorial
 
         static void MakeMaze()
         {
-            //some flavor of grid demo, variable path weights, barriers, etc
 
-            WeightedGraphNode<string>[,] grid = new WeightedGraphNode<string>[21,46];
+            WeightedCoordinateGraphNode<string>[,] grid = new WeightedCoordinateGraphNode<string>[21,46];
 
+            //load the maze from the resources, since it's too much of a hastle to format in-line.
             string maze = Properties.Resources.Maze;
 
             int iter = 0;
@@ -184,7 +182,7 @@ namespace PathfindingTutorial
                 {
                     while (maze[iter] == '\r' || maze[iter] == '\n')
                         iter++;
-                    grid[i, j] = new WeightedGraphNode<string>(maze[iter].ToString());
+                    grid[i, j] = new WeightedCoordinateGraphNode<string>(maze[iter].ToString(), i,j);
                     iter++;
                 }
 
@@ -198,9 +196,11 @@ namespace PathfindingTutorial
                         grid[i, j].AddMutualNeighbor(grid[i, j + 1], 1);
                 }
 
+            var graph = new Graph<string>(grid);
+
             void ShowMazeSolution(NodePath<string> final)
             {
-                Console.WriteLine("Solved the maze with path length of {0}", final.PathLength);
+                Console.WriteLine("Solved the maze with path length of {0} with a search space of {1}", final.PathLength, graph.LastSearchSpace);
 
                 var backtracking = new Stack<NodePath<string>>();
 
@@ -222,22 +222,27 @@ namespace PathfindingTutorial
                 }
             }
 
-
-            var graph = new Graph<string>(grid);
-
+            //I do not recommend running BFS on a maze.
             var finalDFS = graph.RunDFS(grid[1, 0], grid[19, 45]);
 
             ShowMazeSolution(finalDFS);
 
-            graph = new Graph<string>(grid);
-
+            //Use dijkstra instead to find the best path
             var finalDijkstra = graph.RunDijkstra(grid[1, 0], grid[19, 45]);
 
             ShowMazeSolution(finalDijkstra);
 
+            static int heuristic(WeightedCoordinateGraphNode<string> val)
+            {
+                return Math.Abs(val.X - 19) + Math.Abs(val.Y - 45);
+            }
+
+            //Use a* instead to try to get the best path faster
+            var finalA_Star = graph.RunA_Star(grid[1, 0], grid[19, 45], heuristic);
+
+            ShowMazeSolution(finalA_Star);
+
         }
-
-
 
         static void PrintGrid(WeightedGraphNode<string>[,] grid)
         {
@@ -248,7 +253,7 @@ namespace PathfindingTutorial
                 for (int j = 0; j < grid.GetLength(1); j++)
                     sb.Append(grid[i,j].GetValue());
             }
-            Console.WriteLine(sb);
+            Console.WriteLine(sb.AppendLine());
         }
 
         static void SolvePuzzle(bool IsGreedy, bool print = false)
@@ -292,13 +297,13 @@ namespace PathfindingTutorial
             //MakeGraph();
             //MakeWeightedGraph();
 
+            MakeMaze();
+
             /*
             int numTrials = 250;
             for (int i = 0; i < numTrials; i++)
                 SolvePuzzle(false, numTrials == 1);
             */
-
-            MakeMaze();
 
             Console.ReadLine();
         }

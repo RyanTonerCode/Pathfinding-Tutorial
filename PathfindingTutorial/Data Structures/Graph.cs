@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -7,6 +8,10 @@ namespace PathfindingTutorial.Data_Structures
 
         private readonly List<IGraphNode<T>> graphStructure = new List<IGraphNode<T>>();
 
+        /// <summary>
+        /// The number of nodes processed by the last search performed on this graph.
+        /// </summary>
+        public int LastSearchSpace { get; private set; }
 
         public Graph(IGraphNode<T>[] nodes)
         {
@@ -33,6 +38,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public NodePath<T> RunDFS(IGraphNode<T> Start, IGraphNode<T> End)
         {
+            LastSearchSpace = 0;
+
             var stk = new Stack<NodePath<T>>();
 
             var begin = new NodePath<T>(Start, null);
@@ -43,6 +50,7 @@ namespace PathfindingTutorial.Data_Structures
 
             while (stk.Count > 0)
             {
+                LastSearchSpace++;
                 NodePath<T> cur = stk.Pop();
 
                 if (cur.Node == End)
@@ -61,6 +69,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public NodePath<T> RunBFS(IGraphNode<T> Start, IGraphNode<T> End)
         {
+            LastSearchSpace = 0;
+
             var stk = new Queue<NodePath<T>>();
 
             var begin = new NodePath<T>(Start, null);
@@ -74,6 +84,7 @@ namespace PathfindingTutorial.Data_Structures
             {
                 NodePath<T> cur = stk.Dequeue();
 
+                LastSearchSpace++;
                 if (cur.Node == End)
                     return cur;
 
@@ -90,6 +101,7 @@ namespace PathfindingTutorial.Data_Structures
 
         public NodePath<T> RunSearch(IGraphSearcher<NodePath<T>> dataStructure, IGraphNode<T> Start, IGraphNode<T> End)
         {
+            LastSearchSpace = 0;
 
             var begin = new NodePath<T>(Start, null);
 
@@ -102,6 +114,7 @@ namespace PathfindingTutorial.Data_Structures
             {
                 NodePath<T> cur = dataStructure.Remove();
 
+                LastSearchSpace++;
                 if (cur.Node == End)
                     return cur;
 
@@ -118,6 +131,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public WeightedNodePath<T> RunDijkstra(WeightedGraphNode<T> Start, WeightedGraphNode<T> End)
         {
+            LastSearchSpace = 0;
+
             IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
 
             var begin = new WeightedNodePath<T>(Start,null,0);
@@ -130,6 +145,7 @@ namespace PathfindingTutorial.Data_Structures
             {
                 WeightedNodePath<T> cur = priQueue.Dequeue();
 
+                LastSearchSpace++;
                 if (cur.Node == End)
                     return cur;
 
@@ -151,6 +167,61 @@ namespace PathfindingTutorial.Data_Structures
 
                         priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
                     }
+            }
+
+            return null;
+        }
+
+        public WeightedNodePath<T> RunA_Star(WeightedCoordinateGraphNode<T> Start, WeightedCoordinateGraphNode<T> End, Func<WeightedCoordinateGraphNode<T>, int> heuristic)
+        {
+            LastSearchSpace = 0;
+
+            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
+
+            var begin = new WeightedNodePath<T>(Start, null, 0);
+            priQueue.Enqueue(begin);
+
+            //this is our "marked" set
+            HashSet<WeightedGraphNode<T>> marked = new HashSet<WeightedGraphNode<T>>();
+
+            while (!priQueue.IsEmpty())
+            {
+                WeightedNodePath<T> cur = priQueue.Dequeue();
+
+                LastSearchSpace++;
+                if (cur.Node == End)
+                    return cur;
+
+                var wgn = (WeightedGraphNode<T>)cur.Node;
+
+                if (marked.Contains(wgn))
+                    continue;
+
+                marked.Add(wgn);
+
+                var newPathLength = cur.PathLength + 1;
+
+                //add all new nodes to the stack
+                foreach (var neighbor in cur.Node.GetNeighbors())
+                {
+
+                    var w_neighbor = (WeightedCoordinateGraphNode<T>)neighbor;
+
+                    if (!marked.Contains(w_neighbor))
+                    { //unmarked neighbor
+
+                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+
+                        //this is a somewhat complex weight function
+                        //it adds the path length g(x)
+                        //with the edge weight to get to the node e(x)
+                        //with the heuristic of how close this node is to the solution h(x)
+                        //so the formula is g(x) + e(x) + h(x)
+                        double new_weight = newPathLength + edge_weight + heuristic(w_neighbor);
+
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, newPathLength));
+                    }
+                }
             }
 
             return null;
