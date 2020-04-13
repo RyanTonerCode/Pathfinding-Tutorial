@@ -232,9 +232,10 @@ namespace PathfindingTutorial
 
             ShowMazeSolution(finalDijkstra);
 
-            static int heuristic(WeightedCoordinateGraphNode<string> val)
+            static int heuristic(WeightedGraphNode<string> node)
             {
-                return Math.Abs(val.X - 19) + Math.Abs(val.Y - 45);
+                var wcgn = (WeightedCoordinateGraphNode<string>)node;
+                return Math.Abs(wcgn.X - 19) + Math.Abs(wcgn.Y - 45);
             }
 
             //Use a* instead to try to get the best path faster

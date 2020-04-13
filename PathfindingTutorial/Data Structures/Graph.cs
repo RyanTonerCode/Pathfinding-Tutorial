@@ -172,7 +172,7 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
-        public WeightedNodePath<T> RunA_Star(WeightedCoordinateGraphNode<T> Start, WeightedCoordinateGraphNode<T> End, Func<WeightedCoordinateGraphNode<T>, int> heuristic)
+        public WeightedNodePath<T> RunA_Star(WeightedGraphNode<T> Start, WeightedGraphNode<T> End, Func<WeightedGraphNode<T>, int> heuristic)
         {
             LastSearchSpace = 0;
 
@@ -205,7 +205,7 @@ namespace PathfindingTutorial.Data_Structures
                 foreach (var neighbor in cur.Node.GetNeighbors())
                 {
 
-                    var w_neighbor = (WeightedCoordinateGraphNode<T>)neighbor;
+                    var w_neighbor = (WeightedGraphNode<T>)neighbor;
 
                     if (!marked.Contains(w_neighbor))
                     { //unmarked neighbor
