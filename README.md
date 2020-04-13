@@ -11,8 +11,9 @@ The following algorithms have been implemented in this tutorial:
 
 A min-heap priority queue is used for storing all weighted paths.
 
-The demo applications provided are the following
+The following demo applications are provided
 1. Stack vs Queue demonstration
 1. Graph construction, unweighted pathfinding, and backtracking
-1. Weighted Graph construction and finding the minimum path
+1. Weighted Graph construction and finding the minimum path with Dijkstra's algorithm
+1. Mazes and pathfinding - DFS vs. Dijkstra vs. A*
 1. Implementation of the 8-puzzle and solving using A* or greedy best-first.
