@@ -46,7 +46,7 @@ namespace PathfindingTutorial.Data_Structures
 
             stk.Push(begin);
 
-            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
+            List<IGraphNode<T>> marked = new List<IGraphNode<T>>();
 
             while (stk.Count > 0)
             {
@@ -56,10 +56,12 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
+                if (marked.Contains(cur.Node))
+                    continue;
                 marked.Add(cur.Node);
 
                 //add all new nodes to the stack
-                foreach (var neighbor in cur.Node.GetNeighbors())
+                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
                     if (!marked.Contains(neighbor))
                         stk.Push(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
             }
@@ -71,29 +73,33 @@ namespace PathfindingTutorial.Data_Structures
         {
             LastSearchSpace = 0;
 
-            var stk = new Queue<NodePath<T>>();
+            var queue = new Queue<NodePath<T>>();
 
             var begin = new NodePath<T>(Start, null);
 
-            stk.Enqueue(begin);
+            queue.Enqueue(begin);
 
             //this is our "marked" set
-            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
+            List<IGraphNode<T>> marked = new List<IGraphNode<T>>();
 
-            while (stk.Count > 0)
+            while (queue.Count > 0)
             {
-                NodePath<T> cur = stk.Dequeue();
+                NodePath<T> cur = queue.Dequeue();
 
                 LastSearchSpace++;
                 if (cur.Node == End)
                     return cur;
 
-                marked.Add(cur.Node);
+                if (marked.Contains(cur.Node))
+                    continue;
+
+                marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
+
 
                 //add all new nodes to the stack
-                foreach (var neighbor in cur.Node.GetNeighbors())
+                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
                     if (!marked.Contains(neighbor)) //unmarked neighbor
-                        stk.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
             }
 
             return null;
@@ -118,6 +124,8 @@ namespace PathfindingTutorial.Data_Structures
                 if (cur.Node == End)
                     return cur;
 
+                if (marked.Contains(cur.Node))
+                    continue;
                 marked.Add(cur.Node);
 
                 //add all new nodes to the stack

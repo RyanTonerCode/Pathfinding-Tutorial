@@ -19,5 +19,7 @@ namespace PathfindingTutorial.Data_Structures
             b.AddNeighbor(a);
         }
 
+        public int GetHashCode();
+
     }
 }

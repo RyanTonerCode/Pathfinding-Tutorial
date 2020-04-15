@@ -6,6 +6,9 @@ namespace PathfindingTutorial.Data_Structures
         public IGraphNode<T> Node { get; private set; }
         public NodePath<T> Parent { get; private set; }
 
+        /// <summary>
+        /// This is simply the number of edges taken to get to this node path
+        /// </summary>
         public int PathLength { get; private set; }
 
         public NodePath(IGraphNode<T> n)

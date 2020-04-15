@@ -32,7 +32,7 @@ namespace PathfindingTutorial.Puzzle
                 totalProcessed++;
 
                 if (top_gb.IsSolved) {
-                    Console.WriteLine("Solved with Path Length of {0} with {1} boards revealed", cur.PathLength, totalProcessed);
+                    Console.WriteLine("Solved Path Length of {0} with {1} boards revealed", cur.PathLength, totalProcessed);
                     return cur;
                 }
 

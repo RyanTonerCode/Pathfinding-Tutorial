@@ -43,7 +43,7 @@ namespace PathfindingTutorial.Data_Structures
 
         private int queue_capacity;
 
-        private const int max_capacity = 1000000;
+        private const int max_capacity = int.MaxValue;
 
         /* The queue is stored from back-to-front. The front indicates where elements are taken from
          * (this follows the first in, first out rule)

@@ -31,5 +31,6 @@ namespace PathfindingTutorial.Data_Structures
         {
             return value;
         }
+
     }
 }

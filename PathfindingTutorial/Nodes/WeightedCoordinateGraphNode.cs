@@ -11,6 +11,6 @@ namespace PathfindingTutorial.Data_Structures
             this.X = X;
             this.Y = Y;
         }
-
+        
     }
 }

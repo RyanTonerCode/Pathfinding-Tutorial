@@ -17,8 +17,11 @@ namespace PathfindingTutorial.Data_Structures
 
         public void AddNeighbor(IGraphNode<T> neighbor, double weight)
         {
-            neighbors.Add(neighbor);
-            EdgeWeights.Add(neighbor, weight);
+            if (!neighbors.Contains(neighbor))
+            {
+                neighbors.Add(neighbor);
+                EdgeWeights.Add(neighbor, weight);
+            }
         }
 
         public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight)
