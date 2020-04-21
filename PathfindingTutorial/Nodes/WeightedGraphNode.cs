@@ -12,10 +12,10 @@ namespace PathfindingTutorial.Data_Structures
 
         public override void AddNeighbor(IGraphNode<T> neighbor)
         {
-            AddNeighbor(neighbor, 0);
+            AddNeighbor(neighbor);
         }
 
-        public void AddNeighbor(IGraphNode<T> neighbor, double weight)
+        public void AddNeighbor(IGraphNode<T> neighbor, double weight = 0)
         {
             if (!neighbors.Contains(neighbor))
             {
@@ -24,10 +24,12 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
-        public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight)
+        public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight) => AddMutualNeighbor(this, neighbor, weight);
+
+        public static void AddMutualNeighbor(WeightedGraphNode<T> n1, WeightedGraphNode<T> n2, double weight)
         {
-            AddNeighbor(neighbor, weight);
-            neighbor.AddNeighbor(this, weight);
+            n1.AddNeighbor(n2, weight);
+            n2.AddNeighbor(n1, weight);
         }
 
     }

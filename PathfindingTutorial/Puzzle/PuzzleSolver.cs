@@ -29,6 +29,10 @@ namespace PathfindingTutorial.Puzzle
                 WeightedNodePath<GameBoard> cur = priQueue.Dequeue();
 
                 GameBoard top_gb = cur.Node.GetValue();
+
+                if (foundBoards.Contains(top_gb.GetHashValue()))
+                    continue;
+
                 totalProcessed++;
 
                 if (top_gb.IsSolved) {

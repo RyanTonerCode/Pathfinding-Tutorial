@@ -7,6 +7,7 @@ namespace PathfindingTutorial
     {
         static void MakeGraph()
         {
+            //Create the vertex set
             GraphNode<char> A = new GraphNode<char>('A');
             GraphNode<char> B = new GraphNode<char>('B');
             GraphNode<char> C = new GraphNode<char>('C');
@@ -15,18 +16,13 @@ namespace PathfindingTutorial
             GraphNode<char> F = new GraphNode<char>('F');
             GraphNode<char> G = new GraphNode<char>('G');
 
-
+            //Create the edge set
             A.AddNeighbor(D);
-
             B.AddNeighbor(G);
-
             C.AddNeighbor(E);
-
             D.AddNeighbor(B);
             D.AddNeighbor(C);
-
             F.AddNeighbor(E);
-
             G.AddNeighbor(A);
             G.AddNeighbor(F);
 
@@ -35,21 +31,21 @@ namespace PathfindingTutorial
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };
             Graph<char> a_graph = new Graph<char>(nodes);
 
-
-            foreach (var a in nodes)
+            foreach (var node1 in nodes)
             {
-                foreach (var b in nodes)
+                foreach (var node2 in nodes)
                 {
-                    if (a == b)
+                    if (node1 == node2)
                         continue; //this is not a very interesting case...
 
-                    Console.WriteLine("Does a path exist from {0} to {1}?\n", a.GetValue(), b.GetValue());
-                    var path = a_graph.RunDFS(a, b);
+                    Console.WriteLine("Does a path exist from {0} to {1}?\n", node1.GetValue(), node2.GetValue());
+                    var path = a_graph.RunDFS(node1, node2);
 
-                    var path2 = a_graph.RunSearch(new Stack<NodePath<char>>(), a, b);
+                    //another way to call this function and run DFS
+                    //var path = a_graph.RunSearch(new Stack<NodePath<char>>(), node1, node2);
 
                     if (path == null)
-                        Console.WriteLine("Nope :(");
+                        Console.WriteLine("\tNope :(");
                     else
                     {
                         Console.WriteLine("Using backtracking, the path is...");
@@ -67,7 +63,7 @@ namespace PathfindingTutorial
                                 Console.Write(" <- ");
                         }
 
-                        Console.WriteLine("\n Using a stack, the path in-order is ");
+                        Console.WriteLine("\n\tUsing a stack, the path in-order is ");
 
                         while (!reverse_backtracking.IsEmpty())
                         {

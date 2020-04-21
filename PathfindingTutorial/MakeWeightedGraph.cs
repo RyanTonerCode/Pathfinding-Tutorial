@@ -7,6 +7,7 @@ namespace PathfindingTutorial
     {
         static void MakeWeightedGraph()
         {
+            //Vertex Set
             WeightedGraphNode<char> A = new WeightedGraphNode<char>('A');
             WeightedGraphNode<char> B = new WeightedGraphNode<char>('B');
             WeightedGraphNode<char> C = new WeightedGraphNode<char>('C');
@@ -15,18 +16,15 @@ namespace PathfindingTutorial
             WeightedGraphNode<char> F = new WeightedGraphNode<char>('F');
             WeightedGraphNode<char> G = new WeightedGraphNode<char>('G');
 
+            //Edge Set
             A.AddMutualNeighbor(B, 4);
             A.AddMutualNeighbor(G, 2);
             A.AddMutualNeighbor(D, 1);
-
             B.AddMutualNeighbor(D, 6);
             B.AddMutualNeighbor(G, 9);
-
             C.AddMutualNeighbor(D, 6);
             C.AddMutualNeighbor(E, 4);
-
             E.AddMutualNeighbor(F, 3);
-
             F.AddMutualNeighbor(G, 5);
 
             GraphNode<char>[] nodes = { A, B, C, D, E, F, G };

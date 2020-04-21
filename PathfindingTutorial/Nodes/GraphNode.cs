@@ -7,6 +7,8 @@ namespace PathfindingTutorial.Data_Structures
         private T value = default;
         protected readonly List<IGraphNode<T>> neighbors = new List<IGraphNode<T>>(10);
 
+        public bool Marked = false;
+
         public GraphNode(T value)
         {
             this.value = value;

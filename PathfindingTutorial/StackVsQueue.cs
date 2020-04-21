@@ -5,20 +5,30 @@ namespace PathfindingTutorial
 {
     public partial class Program
     {
+        /// <summary>
+        /// Demo the difference between the stack and queue data structures
+        /// </summary>
         static void StackVsQueue()
         {
-            //demo the different between a stack and queue
-            //set the default capacity to 4 (this is to check that scaling works)
+            /*Set the default capacity to 4. The data structure will automatically rescale by doubling when necessary.
+             * 
+             * The IGraphSearcher interface maps an abstract interface between stack and queue:
+             *      push, enqueue => add
+             *      pop,  dequeue => remove
+             * 
+             */
+           
             IGraphSearcher<int> test_stack = new Stack<int>(4);
             IGraphSearcher<int> test_queue = new Queue<int>(4);
 
-            for (int i = 0; i < 100; i++)
+            //add numbers from 1-100
+            for (int i = 1; i <= 100; i++)
             {
                 test_stack.Add(i);
                 test_queue.Add(i);
             }
 
-            //show the difference between stacks and queues
+            //Show the difference between stacks and queues
             while (!test_stack.IsEmpty() && !test_queue.IsEmpty())
             {
                 int from_stack = test_stack.Remove();

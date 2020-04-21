@@ -171,7 +171,7 @@ namespace PathfindingTutorial.Puzzle
 
                 if (isBlank)
                 {
-                    blankevenfrombottom = (Height - y) % 2 == 0;
+                    blankevenfrombottom = (Height - y) % 2 == 1;
                     blankLocation = t;
                 }
                 Tiles[t++] = new Tile(r, x, y);

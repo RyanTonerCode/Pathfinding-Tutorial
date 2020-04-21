@@ -5,11 +5,16 @@ namespace PathfindingTutorial
 {
     static partial class Program
     {
+        public const int MaxStackSize = 10000000;
+        public const int MaxQueueSize = 10000000;
+        public const int MaxHeapSize = 10000000;
+
 
         private enum SUBPROGRAM { STACK_VS_QUEUE, MAKE_GRAPH, MAKE_WEIGHTED_GRAPH, MAKE_MAZE, SOLVE_SINGLE_PUZZLE, SOLVE_MANY_PUZZLES};
 
         static void Main(string[] args)
         {
+            //Toggle this value to select which subprogram you want to run.
             SUBPROGRAM sp = SUBPROGRAM.MAKE_MAZE;
 
             switch (sp)

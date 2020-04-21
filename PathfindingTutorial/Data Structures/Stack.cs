@@ -58,7 +58,7 @@ namespace PathfindingTutorial.Data_Structures
         /// <summary>
         /// The maximum allowed stack size. Change as needed.
         /// </summary>
-        private const int max_capacity = 100000;
+        private const int max_capacity = Program.MaxStackSize;
 
         /// <summary>
         /// This method resizes and copies the array

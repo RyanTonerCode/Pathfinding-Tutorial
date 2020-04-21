@@ -12,7 +12,6 @@ namespace PathfindingTutorial
             GameBoard gb = new GameBoard(3, 3);
 
             NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb, IsGreedy);
-            //NodePath<GameBoard> solution2 = PuzzleSolver.A_Star_Search(gb, !IsGreedy);
 
             if (solution == null && print)
             {

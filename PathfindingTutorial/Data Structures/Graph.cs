@@ -13,7 +13,7 @@ namespace PathfindingTutorial.Data_Structures
         /// </summary>
         public int LastSearchSpace { get; private set; }
 
-        public Graph(IGraphNode<T>[] nodes)
+        public Graph(params IGraphNode<T>[] nodes)
         {
             graphStructure = new List<IGraphNode<T>>(nodes);
         }
