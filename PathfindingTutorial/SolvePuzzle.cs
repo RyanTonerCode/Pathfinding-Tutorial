@@ -33,7 +33,11 @@ namespace PathfindingTutorial
             {
                 var top = stk.Pop().Node;
                 if (print)
+                {
+                    sb.Append(top.GetValue().MoveInformation).AppendLine();
                     sb.Append(top.GetValue()).AppendLine();
+
+                }
             }
 
             if (print)

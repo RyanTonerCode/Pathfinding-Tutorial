@@ -15,7 +15,7 @@ namespace PathfindingTutorial
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.MAKE_MAZE;
+            SUBPROGRAM sp = SUBPROGRAM.SOLVE_SINGLE_PUZZLE;
 
             switch (sp)
             {

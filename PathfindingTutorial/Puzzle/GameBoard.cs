@@ -16,6 +16,11 @@ namespace PathfindingTutorial.Puzzle
         public int Height { get; private set; } //number of rows
 
         /// <summary>
+        /// How this board was generated
+        /// </summary>
+        public string MoveInformation { get; private set; }
+
+        /// <summary>
         /// Tiles stored in order from left to right for each row
         /// </summary>
         private readonly Tile[] Tiles;
@@ -39,6 +44,7 @@ namespace PathfindingTutorial.Puzzle
             this.Height = Height;
             Tiles = new Tile[Height * Width];
             GenerateBoard(true);
+            MoveInformation = "Board Generated";
         }
 
         public GameBoard(int Width, int Height, Tile[] oldBoard)
@@ -46,20 +52,28 @@ namespace PathfindingTutorial.Puzzle
             this.Width = Width;
             this.Height = Height;
             Tiles = new Tile[Height * Width];
-            //this will create references from the new board back to the old.
+            //this will create references (aliases) from the new board back to the old.
             Array.Copy(oldBoard, Tiles, oldBoard.Length);
         }
+
+
+        private int? computedManhattanDistance = null;
+        public int GetSigmaManhattanDistance() { 
+            if (computedManhattanDistance == null)
+                computedManhattanDistance = getSigmaManhattanDistance();
+            return computedManhattanDistance.Value; 
+        }  
 
         /// <summary>
         /// Returns the sum of the manhattan distance for all non-blank tiles on the board
         /// </summary>
         /// <returns></returns>
-        public int GetSigmaManhattanDistance()
+        private int getSigmaManhattanDistance()
         {
             int sum = 0;
             foreach(Tile t in Tiles) {
 
-                if (t.IsBlank)
+                if (t.IsBlank) //do not count distance for the blank tile
                     continue;
 
                 int tileExpectedLocNum = t.Value - 1;
@@ -71,6 +85,7 @@ namespace PathfindingTutorial.Puzzle
                 //sum MD for all non-blank tiles
                 sum += Math.Abs(t.Location.X - X) + Math.Abs(t.Location.Y - Y);
             }
+            computedManhattanDistance = sum;
             return sum;
         }
 
@@ -113,6 +128,8 @@ namespace PathfindingTutorial.Puzzle
 
                 //set new blank location
                 gb.blankLocation = tileLocNum;
+
+                gb.MoveInformation = string.Format("Moved {0}", gb.Tiles[blankLocation].Value);
 
                 //Debug.WriteLine(gb.ToString());
 
