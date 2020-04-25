@@ -9,7 +9,8 @@ namespace PathfindingTutorial
     {
         static void SolvePuzzle(bool IsGreedy, bool print = false)
         {
-            GameBoard gb = new GameBoard(3, 3);
+             //int[] board = { 5, 0, 2, 6, 3, 4, 8, 1, 7 };
+;           GameBoard gb = new GameBoard(3, 3);
 
             NodePath<GameBoard> solution = PuzzleSolver.A_Star_Search(gb, IsGreedy);
 

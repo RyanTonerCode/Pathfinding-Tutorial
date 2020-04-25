@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PathfindingTutorial.Puzzle;
+using System;
 using System.Diagnostics;
 
 namespace PathfindingTutorial
@@ -14,6 +15,7 @@ namespace PathfindingTutorial
 
         static void Main(string[] args)
         {
+
             //Toggle this value to select which subprogram you want to run.
             SUBPROGRAM sp = SUBPROGRAM.SOLVE_SINGLE_PUZZLE;
 

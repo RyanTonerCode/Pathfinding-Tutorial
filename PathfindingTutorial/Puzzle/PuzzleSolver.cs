@@ -51,22 +51,22 @@ namespace PathfindingTutorial.Puzzle
                     if (foundBoards.Contains(neighbor.GetHashValue()))
                         continue;
 
-                    double new_weight;
+                    double new_cost;
 
                     if (IsGreedy)
                     {
-                        //weight ~= h(x)
-                        new_weight = neighbor.GetSigmaManhattanDistance();
+                        //cost ~= h(x)
+                        new_cost = neighbor.GetSigmaManhattanDistance();
                     }
                     else
                     {
-                        //weight = h(x) + g(x)
-                        new_weight = neighbor.GetSigmaManhattanDistance() + nextPathLength;
+                        //cost = h(x) + g(x)
+                        new_cost = neighbor.GetSigmaManhattanDistance() + nextPathLength;
                     }
 
                     var n_wgn = new WeightedGraphNode<GameBoard>(neighbor);
 
-                    priQueue.Enqueue(new WeightedNodePath<GameBoard>(n_wgn, cur, new_weight, nextPathLength));
+                    priQueue.Enqueue(new WeightedNodePath<GameBoard>(n_wgn, cur, new_cost, nextPathLength));
                 }
 
                 if (priQueue.IsEmpty())

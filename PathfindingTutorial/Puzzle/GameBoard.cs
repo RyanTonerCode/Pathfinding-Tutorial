@@ -47,6 +47,24 @@ namespace PathfindingTutorial.Puzzle
             MoveInformation = "Board Generated";
         }
 
+
+        public GameBoard(int Width, int Height, params int[] tileStates)
+        {
+            this.Width = Width;
+            this.Height = Height;
+            Tiles = new Tile[Height * Width];
+            int t = 0;
+            foreach(int i in tileStates)
+            {
+                if (i == 0)
+                    blankLocation = t;
+                var (X, Y) = GetGridVal(t);
+                Tiles[t++] = new Tile(i, X, Y);
+            }
+            Console.WriteLine(GetSigmaManhattanDistance());
+            MoveInformation = "Board Generated";
+        }
+
         public GameBoard(int Width, int Height, Tile[] oldBoard)
         {
             this.Width = Width;
@@ -56,13 +74,14 @@ namespace PathfindingTutorial.Puzzle
             Array.Copy(oldBoard, Tiles, oldBoard.Length);
         }
 
-
+        
         private int? computedManhattanDistance = null;
         public int GetSigmaManhattanDistance() { 
             if (computedManhattanDistance == null)
                 computedManhattanDistance = getSigmaManhattanDistance();
             return computedManhattanDistance.Value; 
         }  
+        
 
         /// <summary>
         /// Returns the sum of the manhattan distance for all non-blank tiles on the board
