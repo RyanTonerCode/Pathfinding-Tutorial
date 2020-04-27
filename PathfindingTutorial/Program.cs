@@ -1,6 +1,8 @@
 ﻿using PathfindingTutorial.Puzzle;
 using System;
 using System.Diagnostics;
+using PathfindingTutorial.Data_Structures;
+using System.Collections.Generic;
 
 namespace PathfindingTutorial
 {
@@ -11,13 +13,14 @@ namespace PathfindingTutorial
         public const int MaxHeapSize = 10000000;
 
 
-        private enum SUBPROGRAM { STACK_VS_QUEUE, MAKE_GRAPH, MAKE_WEIGHTED_GRAPH, MAKE_MAZE, SOLVE_SINGLE_PUZZLE, SOLVE_MANY_PUZZLES};
+        private enum SUBPROGRAM { STACK_VS_QUEUE, MAKE_GRAPH, MAKE_WEIGHTED_GRAPH, MAKE_MAZE, SOLVE_SINGLE_PUZZLE, SOLVE_MANY_PUZZLES, MAKE_FSM };
+
 
         static void Main(string[] args)
         {
 
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.SOLVE_SINGLE_PUZZLE;
+            SUBPROGRAM sp = SUBPROGRAM.MAKE_FSM;
 
             switch (sp)
             {
@@ -48,6 +51,9 @@ namespace PathfindingTutorial
                     sw.Stop();
 
                     Console.WriteLine(sw.ElapsedMilliseconds);
+                    break;
+                case SUBPROGRAM.MAKE_FSM:
+                    MakeFSM();
                     break;
             }
 
