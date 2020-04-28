@@ -6,6 +6,11 @@ namespace PathfindingTutorial.Data_Structures
     {
         public Dictionary<IGraphNode<T>, double> EdgeWeights { get; private set; } = new Dictionary<IGraphNode<T>, double>();
 
+        public bool HasNeighbor(IGraphNode<T> neighbor)
+        {
+            return EdgeWeights.ContainsKey(neighbor);
+        }
+
         public WeightedGraphNode(T value) : base(value)
         {
         }
@@ -30,6 +35,27 @@ namespace PathfindingTutorial.Data_Structures
         {
             n1.AddNeighbor(n2, weight);
             n2.AddNeighbor(n1, weight);
+        }
+
+        public (IGraphNode<T>, double) GetMinimumNeighbor()
+        {
+            IGraphNode<T> current = EdgeWeights.Keys.GetEnumerator().Current;
+            double min = EdgeWeights.Values.GetEnumerator().Current;
+            foreach(var n in EdgeWeights)
+            {
+                if (n.Value <= min)
+                {
+                    current = n.Key;
+                    min = n.Value;
+                }
+            }
+
+            return (current, min);
+        }
+
+        public WeightedGraphNode<T> Clone()
+        {
+            return new WeightedGraphNode<T>(value);
         }
 
     }

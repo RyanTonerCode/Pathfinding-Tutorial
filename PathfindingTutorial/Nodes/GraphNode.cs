@@ -4,7 +4,7 @@ namespace PathfindingTutorial.Data_Structures
 {
     public class GraphNode<T> : IGraphNode<T>
     {
-        private T value = default;
+        protected T value = default;
         protected readonly List<IGraphNode<T>> neighbors = new List<IGraphNode<T>>(10);
 
         public bool Marked = false;

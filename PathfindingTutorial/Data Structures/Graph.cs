@@ -8,6 +8,9 @@ namespace PathfindingTutorial.Data_Structures
 
         private readonly List<IGraphNode<T>> graphStructure = new List<IGraphNode<T>>();
 
+        public IGraphNode<T> FirstNode => graphStructure[0];
+        public IGraphNode<T> LastNode => graphStructure[graphStructure.Count - 1];
+
         /// <summary>
         /// The number of nodes processed by the last search performed on this graph.
         /// </summary>
@@ -24,6 +27,11 @@ namespace PathfindingTutorial.Data_Structures
             foreach (var n in nodes)
                 graphStructure.Add(n);
             
+        }
+
+        public Graph(List<IGraphNode<T>> graph)
+        {
+            graphStructure = graph;
         }
 
         public void AddNode(IGraphNode<T> Node)
@@ -93,7 +101,14 @@ namespace PathfindingTutorial.Data_Structures
                 if (marked.Contains(cur.Node))
                     continue;
 
-                marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
+                try
+                {
+                    marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
+                }
+                catch(InvalidCastException ex)
+                {
+                    marked.Add((WeightedGraphNode<T>)cur.Node);
+                }
 
 
                 //add all new nodes to the stack
@@ -233,6 +248,102 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             return null;
+        }
+
+
+        public Graph<T> PrimsAlgorithmForMST()
+        {
+            if (graphStructure.Count == 0)
+                throw new Exception("Empty graph");
+
+            //nodes in graph G (this)
+            List<WeightedGraphNode<T>> RemainingNodesInOriginal = new List<WeightedGraphNode<T>>(graphStructure.Count);
+            foreach (var n in graphStructure)
+                RemainingNodesInOriginal.Add((WeightedGraphNode<T>)n);
+
+            //nodes in the MST with references in G
+            List<WeightedGraphNode<T>> VT_G = new List<WeightedGraphNode<T>>(graphStructure.Count);
+
+            //the clones
+            List<WeightedGraphNode<T>> VT_Clones = new List<WeightedGraphNode<T>>(graphStructure.Count);
+
+            //pick an arbitrary node
+            WeightedGraphNode<T> arbitrary = (WeightedGraphNode<T>)graphStructure[0];
+
+            //place on the MST nodes
+            VT_G.Add(arbitrary);
+            VT_Clones.Add(arbitrary.Clone());
+
+            //remove it from the original set
+            RemainingNodesInOriginal.Remove(arbitrary);
+
+            while(RemainingNodesInOriginal.Count != 0)
+            {
+                WeightedGraphNode<T> current_in_vt_clone = null;
+
+                //connects to node called current_in_vt
+                WeightedGraphNode<T> edgeNodeOfCurrent = null;
+
+                //the value associated with the edge (weight)
+                double min = -1;
+
+                //go through all nodes currently in the MST
+                for (int j = 0; j < VT_G.Count; j++)
+                {
+                    var vt_node = VT_G[j];
+
+                    //go through all nodes in the original not in the current MST
+                    for (int k = 0; k < RemainingNodesInOriginal.Count; k++)
+                    {
+                         var remaining_node = RemainingNodesInOriginal[k];
+
+                         //if it has the remaining node as a neighbor
+                         if (vt_node.HasNeighbor(remaining_node))
+                         {
+                            if(min == -1 || vt_node.EdgeWeights[remaining_node] < min)
+                            {
+                                //we have found a new min!
+
+                                edgeNodeOfCurrent = remaining_node;
+                                min = vt_node.EdgeWeights[remaining_node];
+
+                                current_in_vt_clone = VT_Clones[j];
+                            }
+                        }
+                    }               
+                }
+
+                var edgeNodeOfCurrent_clone = edgeNodeOfCurrent.Clone();
+                current_in_vt_clone.AddNeighbor(edgeNodeOfCurrent_clone, min);
+
+                VT_G.Add(edgeNodeOfCurrent);
+                VT_Clones.Add(edgeNodeOfCurrent_clone);
+
+                RemainingNodesInOriginal.Remove(edgeNodeOfCurrent);
+            }
+
+            Graph<T> MST = new Graph<T>();
+
+            foreach(var n in VT_Clones)
+                MST.AddNode(n);
+
+            return MST;
+
+        }
+
+        public void PrintNodeInfo()
+        {
+            foreach(var n in graphStructure)
+                foreach(var neighbor in n.GetNeighbors())
+                {
+                    Console.Write("({0},{1})", n.GetValue(), neighbor.GetValue());
+
+                    if (n is WeightedGraphNode<T> wgn)
+                    {
+                        Console.Write(" : {0}", wgn.EdgeWeights[neighbor]);
+                    }
+                    Console.WriteLine();
+                }
         }
 
     }
