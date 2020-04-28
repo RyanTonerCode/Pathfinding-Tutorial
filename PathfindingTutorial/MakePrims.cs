@@ -15,7 +15,7 @@ namespace PathfindingTutorial
             nodes[0].AddMutualNeighbor(nodes[1], 4);
             nodes[0].AddMutualNeighbor(nodes[7], 8);
             nodes[1].AddMutualNeighbor(nodes[7], 11);
-            nodes[1].AddMutualNeighbor(nodes[2], 8);
+            nodes[1].AddMutualNeighbor(nodes[2], 9);
             nodes[7].AddMutualNeighbor(nodes[6], 1);
             nodes[7].AddMutualNeighbor(nodes[8], 7);
             nodes[2].AddMutualNeighbor(nodes[8], 2);

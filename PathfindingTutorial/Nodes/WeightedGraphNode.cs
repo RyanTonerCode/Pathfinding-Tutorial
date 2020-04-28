@@ -55,7 +55,11 @@ namespace PathfindingTutorial.Data_Structures
 
         public WeightedGraphNode<T> Clone()
         {
-            return new WeightedGraphNode<T>(value);
+            var cln = new WeightedGraphNode<T>(value);
+            //foreach (var kvp in EdgeWeights)
+            //    cln.EdgeWeights.Add(kvp.Key, kvp.Value);
+
+            return cln;
         }
 
     }
