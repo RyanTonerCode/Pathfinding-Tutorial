@@ -11,18 +11,28 @@ namespace PathfindingTutorial
         /// </summary>
         private class VectorizeState
         {
-            public int I, J, K;
-            public VectorizeState(int I, int J, int K)
+            public int I, J, K, L, M;
+            public VectorizeState(int I, int J, int K, int L, int M)
             {
                 this.I = I;
                 this.J = J;
                 this.K = K;
+                this.L = L;
+                this.M = M;
             }
 
-            public VectorizeState IncI() => new VectorizeState(I + 1, J, K);
-            public VectorizeState IncJ() => new VectorizeState(I, J + 1, K);
-            public VectorizeState IncK() => new VectorizeState(I, J, K + 1);
+            public VectorizeState IncI() => new VectorizeState(I + 1, J, K, L, M);
+            public VectorizeState IncJ() => new VectorizeState(I, J + 1, K, L, M);
+            public VectorizeState IncK() => new VectorizeState(I, J, K + 1, L, M);
+            public VectorizeState IncL() => new VectorizeState(I, J, K, L + 1, M);
+            public VectorizeState IncM() => new VectorizeState(I, J, K, L, M + 1);
         }
+
+        private static string[] hat = { "hat" };
+        private static string[] goggles = { "goggles" };
+        private static string[] jacket = { "jacket", "gloves" };
+        private static string[] pants = { "pants", "boots", "skis" };
+        private static string[] grab = { "grab ticket" };
 
         /// <summary>
         /// Recursively generate the FSM
@@ -30,35 +40,40 @@ namespace PathfindingTutorial
         /// <param name="par"></param>
         private static void generateFSM(FSM_Node<VectorizeState> par)
         {
-            string[] think  =   { "think", "talk" };
-            string[] cookie =   { "cookie"        };
-            string[] coffee =   { "coffee"        };
 
             var p = par.GetValue();
-            if (p.I < 1)
+            if (p.I < hat.Length)
             {
                 var tmp = new FSM_Node<VectorizeState>(p.IncI());
-                par.AddNeighbor(tmp, coffee[p.I]);
-                generateFSM(tmp);
+                par.AddNeighbor(tmp, hat[p.I]);
             }
-            if (p.J < 2)
+            if (p.J < goggles.Length)
             {
                 var tmp = new FSM_Node<VectorizeState>(p.IncJ());
-                par.AddNeighbor(tmp, think[p.J]);
-                generateFSM(tmp);
+                par.AddNeighbor(tmp, goggles[p.J]);
             }
-            if (p.K < 1)
+            if (p.K < jacket.Length)
             {
                 var tmp = new FSM_Node<VectorizeState>(p.IncK());
-                par.AddNeighbor(tmp, cookie[p.K]);
-                generateFSM(tmp);
+                par.AddNeighbor(tmp, jacket[p.K]);
             }
-
+            if (p.L < pants.Length)
+            {
+                var tmp = new FSM_Node<VectorizeState>(p.IncL());
+                par.AddNeighbor(tmp, pants[p.L]);
+            }
+            if (p.M  < grab.Length)
+            {
+                var tmp = new FSM_Node<VectorizeState>(p.IncM());
+                par.AddNeighbor(tmp, grab[p.M]);
+            }
+            foreach (var n in par.GetNeighbors())
+                generateFSM((FSM_Node<VectorizeState>)n);
         }
         public static void MakeFSM()
         {
 
-            var starting_state = new VectorizeState(0, 0, 0);
+            var starting_state = new VectorizeState(0, 0, 0, 0, 0);
             var starting_node = new FSM_Node<VectorizeState>(starting_state);
 
             generateFSM(starting_node);
@@ -86,7 +101,7 @@ namespace PathfindingTutorial
 
         private static int checkFinishedTrace(int traces, NodePath<VectorizeState> top, VectorizeState top_state)
         {
-            if (top_state.I == 1 && top_state.J == 2 && top_state.K == 1)
+            if (top_state.I == 1 && top_state.J == 1 && top_state.K == 2 & top_state.L == 3 && top_state.M == 1)
             {
                 var stk = new Stack<NodePath<VectorizeState>>();
 

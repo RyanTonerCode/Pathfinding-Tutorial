@@ -120,14 +120,7 @@ namespace PathfindingTutorial.Data_Structures
                 if (marked.Contains(cur.Node))
                     continue;
 
-                try
-                {
-                    marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
-                }
-                catch(InvalidCastException ex)
-                {
-                    marked.Add((WeightedGraphNode<T>)cur.Node);
-                }
+                marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
 
 
                 //add all new nodes to the stack

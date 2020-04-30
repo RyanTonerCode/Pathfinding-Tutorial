@@ -20,7 +20,7 @@ namespace PathfindingTutorial
         {
 
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.MIN_SPANNING_TREE;
+            SUBPROGRAM sp = SUBPROGRAM.MAKE_FSM;
 
             switch (sp)
             {
