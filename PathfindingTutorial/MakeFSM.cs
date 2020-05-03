@@ -11,72 +11,56 @@ namespace PathfindingTutorial
         /// </summary>
         private class VectorizeState
         {
-            public int I, J, K, L, M;
-            public VectorizeState(int I, int J, int K, int L, int M)
+            public int[] States;
+            public VectorizeState(params int[] states)
             {
-                this.I = I;
-                this.J = J;
-                this.K = K;
-                this.L = L;
-                this.M = M;
+                States = states;
             }
 
-            public VectorizeState IncI() => new VectorizeState(I + 1, J, K, L, M);
-            public VectorizeState IncJ() => new VectorizeState(I, J + 1, K, L, M);
-            public VectorizeState IncK() => new VectorizeState(I, J, K + 1, L, M);
-            public VectorizeState IncL() => new VectorizeState(I, J, K, L + 1, M);
-            public VectorizeState IncM() => new VectorizeState(I, J, K, L, M + 1);
+            public VectorizeState IncrementState(int index)
+            {
+                int[] copy = new int[States.Length];
+                Array.Copy(States, copy, States.Length);
+                copy[index]++;
+                return new VectorizeState(copy);
+            }
         }
 
-        private static string[] hat = { "hat" };
-        private static string[] goggles = { "goggles" };
-        private static string[] jacket = { "jacket", "gloves" };
-        private static string[] pants = { "pants", "boots", "skis" };
-        private static string[] grab = { "grab ticket" };
+        private static readonly string[] hat = { "hat" };
+        private static readonly string[] goggles = { "goggles" };
+        private static readonly string[] jacket = { "jacket", "gloves" };
+        private static readonly string[] pants = { "pants", "boots", "skis" };
+        private static readonly string[] grab = { "grab ticket" };
 
         /// <summary>
         /// Recursively generate the FSM
         /// </summary>
         /// <param name="par"></param>
-        private static void generateFSM(FSM_Node<VectorizeState> par)
+        private static void generateFSM(FSM_Node<VectorizeState> par, string[][] indices)
         {
 
             var p = par.GetValue();
-            if (p.I < hat.Length)
+            for(int ar = 0; ar < indices.Length; ar++)
             {
-                var tmp = new FSM_Node<VectorizeState>(p.IncI());
-                par.AddNeighbor(tmp, hat[p.I]);
+                string[] select = indices[ar];
+
+                if (p.States[ar] == select.Length)
+                    continue;
+                var tmp = new FSM_Node<VectorizeState>(p.IncrementState(ar));
+                par.AddNeighbor(tmp, select[p.States[ar]]);
             }
-            if (p.J < goggles.Length)
-            {
-                var tmp = new FSM_Node<VectorizeState>(p.IncJ());
-                par.AddNeighbor(tmp, goggles[p.J]);
-            }
-            if (p.K < jacket.Length)
-            {
-                var tmp = new FSM_Node<VectorizeState>(p.IncK());
-                par.AddNeighbor(tmp, jacket[p.K]);
-            }
-            if (p.L < pants.Length)
-            {
-                var tmp = new FSM_Node<VectorizeState>(p.IncL());
-                par.AddNeighbor(tmp, pants[p.L]);
-            }
-            if (p.M  < grab.Length)
-            {
-                var tmp = new FSM_Node<VectorizeState>(p.IncM());
-                par.AddNeighbor(tmp, grab[p.M]);
-            }
+
             foreach (var n in par.GetNeighbors())
-                generateFSM((FSM_Node<VectorizeState>)n);
+                generateFSM((FSM_Node<VectorizeState>)n, indices);
         }
         public static void MakeFSM()
         {
-
             var starting_state = new VectorizeState(0, 0, 0, 0, 0);
             var starting_node = new FSM_Node<VectorizeState>(starting_state);
 
-            generateFSM(starting_node);
+            string[][] transitions = new string[][] { hat, goggles, jacket, pants, grab };
+
+            generateFSM(starting_node, transitions);
 
             int traces = 0;
 
@@ -91,7 +75,7 @@ namespace PathfindingTutorial
 
                 var top_state = top.Node.GetValue();
 
-                traces = checkFinishedTrace(traces, top, top_state);
+                traces = checkFinishedTrace(traces, top, top_state, transitions);
 
                 //add all new nodes to the stack
                 foreach (var neighbor in top.Node.GetNeighbors())
@@ -99,37 +83,37 @@ namespace PathfindingTutorial
             }
         }
 
-        private static int checkFinishedTrace(int traces, NodePath<VectorizeState> top, VectorizeState top_state)
+        private static int checkFinishedTrace(int traces, NodePath<VectorizeState> top, VectorizeState top_state, string[][] transitions)
         {
-            if (top_state.I == 1 && top_state.J == 1 && top_state.K == 2 & top_state.L == 3 && top_state.M == 1)
+            for (int ar = 0; ar < transitions.Length; ar++)
+                if (top_state.States[ar] < transitions[ar].Length)
+                    return traces;
+
+            var stk = new Stack<NodePath<VectorizeState>>();
+
+            NodePath<VectorizeState> ptr = top;
+
+            while (ptr != null)
             {
-                var stk = new Stack<NodePath<VectorizeState>>();
+                stk.Add(ptr);
 
-                NodePath<VectorizeState> ptr = top;
-
-                while (ptr != null)
-                {
-                    stk.Add(ptr);
-
-                    ptr = ptr.Parent;
-                }
-
-                Console.Write("Trace {0}: ", ++traces);
-
-                while (!stk.IsEmpty())
-                {
-                    var here = stk.Pop();
-                    if (here.Parent != null)
-                    {
-                        var msg = ((FSM_Node<VectorizeState>)here.Parent.Node).GetMessage((FSM_Node<VectorizeState>)here.Node);
-                        Console.Write(msg);
-                        if (!stk.IsEmpty())
-                            Console.Write(" -> ");
-                    }
-                }
-                Console.WriteLine();
-
+                ptr = ptr.Parent;
             }
+
+            Console.Write("Trace {0}: ", ++traces);
+
+            while (!stk.IsEmpty())
+            {
+                var here = stk.Pop();
+                if (here.Parent != null)
+                {
+                    var msg = ((FSM_Node<VectorizeState>)here.Parent.Node).GetMessage((FSM_Node<VectorizeState>)here.Node);
+                    Console.Write(msg);
+                    if (!stk.IsEmpty())
+                        Console.Write(" -> ");
+                }
+            }
+            Console.WriteLine();
 
             return traces;
         }
