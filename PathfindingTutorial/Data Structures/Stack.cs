@@ -71,9 +71,6 @@ namespace PathfindingTutorial.Data_Structures
             //do not allow capacity to exceed the maximum
             if (stack_capacity > max_capacity)
                 stack_capacity = max_capacity; 
-            
-            //create buffer array to extent array size
-            var buffer = new T[stack_capacity];
 
             //use built in library to resize the array
             Array.Resize(ref stack_data, stack_capacity);
