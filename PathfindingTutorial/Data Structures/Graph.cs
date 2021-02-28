@@ -230,14 +230,14 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
-        public bool CheckForUndirectedCycleUsingDjikstra(WeightedGraphNode<T> endpoint)
+        public bool CheckForUndirectedCycleUsingBFS(WeightedGraphNode<T> endpoint)
         {
             LastSearchSpace = 0;
 
-            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
+            var queue = new Queue<NodePath<T>>();
 
             var begin = new WeightedNodePath<T>(endpoint, null, 0);
-            priQueue.Enqueue(begin);
+            queue.Enqueue(begin);
 
             /**
              * Assume the graph is a rooted tree with the endpoint as the root
@@ -246,9 +246,9 @@ namespace PathfindingTutorial.Data_Structures
              */
             var visitedByMap = new Dictionary<IGraphNode<T>, IGraphNode<T>>();
 
-            while (!priQueue.IsEmpty())
+            while (!queue.IsEmpty())
             {
-                WeightedNodePath<T> cur = priQueue.Dequeue();
+                WeightedNodePath<T> cur = (WeightedNodePath<T>)queue.Dequeue();
 
                 LastSearchSpace++;
 
@@ -264,7 +264,7 @@ namespace PathfindingTutorial.Data_Structures
 
                         double new_weight = cur.PathWeightToHere + edge_weight;
 
-                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
+                        queue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
 
                         //the neighbor is visited, or found, by the current node.
                         visitedByMap.Add(neighbor, cur.Node);
@@ -433,7 +433,7 @@ namespace PathfindingTutorial.Data_Structures
                     if (VT.ContainsKey(edge.Node2))
                     {
                         //Some cycle exists!
-                        if (MSF.CheckForUndirectedCycleUsingDjikstra(VT[edge.Node1]) || MSF.CheckForUndirectedCycleUsingDjikstra(VT[edge.Node2]) )
+                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1]) || MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node2]) )
                             continue;
                     }
                     else
