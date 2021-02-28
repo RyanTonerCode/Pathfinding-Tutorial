@@ -14,20 +14,43 @@ namespace PathfindingTutorial.Data_Structures
         /// <returns></returns>
         public List<Edge<T>> SortedEdgeList()
         {
-            List<Edge<T>> edges = new List<Edge<T>>();
+            List<Edge<T>> edges = EdgeListUndirected();
 
-            foreach(var node in graphStructure)
-                foreach(var neighbor in node.GetNeighbors())
+            edges.Sort((x, y) => x.Weight.CompareTo(y.Weight));
+            return edges;
+        }
+
+        public List<Edge<T>> EdgeList()
+        {
+            var edges = new List<Edge<T>>();
+
+            foreach (var node in graphStructure)
+                foreach (var neighbor in node.GetNeighbors())
                 {
                     if (node is WeightedGraphNode<T> wgn)
                         edges.Add(new Edge<T>(node, neighbor, wgn.EdgeWeights[neighbor]));
                     else
                         edges.Add(new Edge<T>(node, neighbor));
                 }
-            
-            edges.Sort((x, y) => x.Weight.CompareTo(y.Weight));
 
             return edges;
+        }
+
+        public List<Edge<T>> EdgeListUndirected()
+        {
+            var edgeList = EdgeList();
+
+            for(int i = edgeList.Count - 1; i >= 0 ; i--)
+            {
+                var edge = edgeList[i];
+                int duplicateEdge = edgeList.FindIndex(x => x.Node1 == edge.Node2 && x.Node2 == edge.Node1);
+                if (duplicateEdge > -1)
+                {
+                    edgeList.RemoveAt(duplicateEdge);
+                }
+            }
+
+            return edgeList;
         }
 
         /// <summary>
@@ -207,6 +230,54 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
+        public bool CheckForUndirectedCycleUsingDjikstra(WeightedGraphNode<T> endpoint)
+        {
+            LastSearchSpace = 0;
+
+            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
+
+            var begin = new WeightedNodePath<T>(endpoint, null, 0);
+            priQueue.Enqueue(begin);
+
+            /**
+             * Assume the graph is a rooted tree with the endpoint as the root
+             * This means we have a unique trace or path to reach each vertex from the endpoint
+             * So, if we reach a vertex that already has a path assignment, we have found a cycle
+             */
+            var visitedByMap = new Dictionary<IGraphNode<T>, IGraphNode<T>>();
+
+            while (!priQueue.IsEmpty())
+            {
+                WeightedNodePath<T> cur = priQueue.Dequeue();
+
+                LastSearchSpace++;
+
+                //add all new nodes to the stack
+                foreach (var neighbor in cur.Node.GetNeighbors())
+                {
+                    var neighborVisited = visitedByMap.ContainsKey(neighbor);
+
+                    if (!neighborVisited)
+                    {   //process the unvisited neighbor
+
+                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+
+                        double new_weight = cur.PathWeightToHere + edge_weight;
+
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
+
+                        //the neighbor is visited, or found, by the current node.
+                        visitedByMap.Add(neighbor, cur.Node);
+                    }
+                    //if the neighbor is visited, but was not visited by the current node, it means we have found a cycle i.e. another path to this node
+                    else if (visitedByMap[neighbor] != cur.Node)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public WeightedNodePath<T> RunA_Star(WeightedGraphNode<T> Start, WeightedGraphNode<T> End, Func<WeightedGraphNode<T>, int> heuristic)
         {
             LastSearchSpace = 0;
@@ -339,6 +410,61 @@ namespace PathfindingTutorial.Data_Structures
                 MST.AddNode(node.Value);
 
             return MST;
+        }
+
+        public Graph<T> KruskalsAlgorithmForMinimumSpanningForest()
+        {
+            if (graphStructure.Count == 0)
+                throw new Exception("Empty graph");
+
+            //Dictionary associates nodes in G as keys with nodes in MST(G) as values
+            var VT = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
+
+            //obtain sorted edge list for G
+            var sortedEdgeList = EdgeListUndirected();
+
+            Graph<T> MSF = new Graph<T>();
+
+            foreach (var edge in sortedEdgeList)
+            {
+                if (VT.ContainsKey(edge.Node1)) {
+
+                    //Since this edge contains both endpoints already in the MSF, check to see if a cycle is created.
+                    if (VT.ContainsKey(edge.Node2))
+                    {
+                        //Some cycle exists!
+                        if (MSF.CheckForUndirectedCycleUsingDjikstra(VT[edge.Node1]) || MSF.CheckForUndirectedCycleUsingDjikstra(VT[edge.Node2]) )
+                            continue;
+                    }
+                    else
+                    {
+                        //add the second node to the list
+                        var node = (WeightedGraphNode<T>)edge.Node2;
+                        VT.Add(node, node.Clone());
+                        MSF.AddNode(VT[node]);
+                    }
+                }
+                else if (VT.ContainsKey(edge.Node2))
+                {
+                    //add the first node to the list
+                    var node = (WeightedGraphNode<T>)edge.Node1;
+                    VT.Add(node, node.Clone());
+                    MSF.AddNode(VT[node]);
+                }
+                else
+                {
+                    //add both nodes to the list
+                    var node1 = (WeightedGraphNode<T>)edge.Node1;
+                    var node2 = (WeightedGraphNode<T>)edge.Node2;
+                    VT.Add(node1, node1.Clone());
+                    VT.Add(node2, node2.Clone());
+                    MSF.AddNode(VT[node1]);
+                    MSF.AddNode(VT[node2]);
+                }
+                VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+            }
+
+            return MSF;
         }
 
         public void PrintNodeInfo()

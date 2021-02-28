@@ -32,5 +32,10 @@ namespace PathfindingTutorial.Data_Structures
             throw new NotImplementedException();
         }
 
+        public override string ToString()
+        {
+            return Node1.GetValue() + " --> " + Node2.GetValue() + " (" + Weight + ")";
+        }
+
     }
 }
