@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace PathfindingTutorial.Data_Structures
 {
     public interface IGraphSearcher<T>

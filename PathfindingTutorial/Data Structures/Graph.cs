@@ -14,9 +14,10 @@ namespace PathfindingTutorial.Data_Structures
         /// <returns></returns>
         public List<Edge<T>> SortedEdgeList()
         {
-            List<Edge<T>> edges = EdgeListUndirected();
+            List<Edge<T>> edges = EdgeList();
 
             edges.Sort((x, y) => x.Weight.CompareTo(y.Weight));
+
             return edges;
         }
 
@@ -38,15 +39,23 @@ namespace PathfindingTutorial.Data_Structures
 
         public List<Edge<T>> EdgeListUndirected()
         {
-            var edgeList = EdgeList();
+            var edgeList = SortedEdgeList();
 
-            for(int i = edgeList.Count - 1; i >= 0 ; i--)
+            for(int i = 0; i < edgeList.Count; i++)
             {
                 var edge = edgeList[i];
-                int duplicateEdge = edgeList.FindIndex(x => x.Node1 == edge.Node2 && x.Node2 == edge.Node1);
-                if (duplicateEdge > -1)
+                int j = i;
+                while(++j < edgeList.Count)
                 {
-                    edgeList.RemoveAt(duplicateEdge);
+                    var findDupe = edgeList[j];
+                    if (findDupe.Weight > edge.Weight)
+                        break;
+                    if(findDupe.Node2 == edge.Node1 && findDupe.Node1 == edge.Node2)
+                    {
+                        edgeList[i] = edgeList[j];
+                        edgeList.RemoveAt(j);
+                        break;
+                    }
                 }
             }
 
@@ -433,7 +442,7 @@ namespace PathfindingTutorial.Data_Structures
                     if (VT.ContainsKey(edge.Node2))
                     {
                         //Some cycle exists!
-                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1]) || MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node2]) )
+                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1]))
                             continue;
                     }
                     else
