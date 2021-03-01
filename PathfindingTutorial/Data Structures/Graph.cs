@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace PathfindingTutorial.Data_Structures
@@ -45,14 +46,14 @@ namespace PathfindingTutorial.Data_Structures
             {
                 var edge = edgeList[i];
                 int j = i;
-                while(++j < edgeList.Count)
+                while(j++ <= edgeList.Count)
                 {
                     var findDupe = edgeList[j];
                     if (findDupe.Weight > edge.Weight)
                         break;
                     if(findDupe.Node2 == edge.Node1 && findDupe.Node1 == edge.Node2)
                     {
-                        edgeList[i] = edgeList[j];
+                        //edgeList[i] = edgeList[j];
                         edgeList.RemoveAt(j);
                         break;
                     }
@@ -239,13 +240,20 @@ namespace PathfindingTutorial.Data_Structures
             return null;
         }
 
+        /// <summary>
+        /// Check for a cycle in a undirected graph
+        /// </summary>
+        /// <param name="endpoint">The vertex to start the BFS from. 
+        /// This is the "root" of the tree structure created by the algorithm.
+        /// </param>
+        /// <returns>Bool indicating if a cycle was found</returns>
         public bool CheckForUndirectedCycleUsingBFS(WeightedGraphNode<T> endpoint)
         {
             LastSearchSpace = 0;
 
             var queue = new Queue<NodePath<T>>();
 
-            var begin = new WeightedNodePath<T>(endpoint, null, 0);
+            var begin = new NodePath<T>(endpoint, null, 0);
             queue.Enqueue(begin);
 
             /**
@@ -257,29 +265,31 @@ namespace PathfindingTutorial.Data_Structures
 
             while (!queue.IsEmpty())
             {
-                WeightedNodePath<T> cur = (WeightedNodePath<T>)queue.Dequeue();
+                var cur = queue.Dequeue();
 
                 LastSearchSpace++;
 
                 //add all new nodes to the stack
                 foreach (var neighbor in cur.Node.GetNeighbors())
                 {
+                    //do not process the endpoint more than once
+                    if (neighbor == endpoint)
+                        continue;
+
                     var neighborVisited = visitedByMap.ContainsKey(neighbor);
 
                     if (!neighborVisited)
                     {   //process the unvisited neighbor
+                        //add the neighbor to the queue
+                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
 
-                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
-
-                        double new_weight = cur.PathWeightToHere + edge_weight;
-
-                        queue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
-
-                        //the neighbor is visited, or found, by the current node.
+                        //the neighbor is visited, or "found," by the current node.
                         visitedByMap.Add(neighbor, cur.Node);
                     }
-                    //if the neighbor is visited, but was not visited by the current node, it means we have found a cycle i.e. another path to this node
-                    else if (visitedByMap[neighbor] != cur.Node)
+                    //if the neighbor is already visited by another node than the current node,
+                    //and if the current node is visited by another node than the neighbor,
+                    //it means we have found a cycle i.e. another path it is possible to reach the neighbor
+                    else if (visitedByMap[cur.Node] != neighbor && visitedByMap[neighbor] != cur.Node)
                         return true;
                 }
             }
@@ -438,12 +448,17 @@ namespace PathfindingTutorial.Data_Structures
             {
                 if (VT.ContainsKey(edge.Node1)) {
 
-                    //Since this edge contains both endpoints already in the MSF, check to see if a cycle is created.
                     if (VT.ContainsKey(edge.Node2))
                     {
-                        //Some cycle exists!
-                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1]))
+                        //add this test edge to the graph
+                        VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+;
+                        //Since this edge contains both endpoints already in the MSF, check to see if a cycle is created.
+                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1])) {
+                            //a cycle is created, so skip this edge.
+                            VT[edge.Node1].RemoveMutualNeighbor(VT[edge.Node2]);
                             continue;
+                        }
                     }
                     else
                     {
@@ -451,6 +466,7 @@ namespace PathfindingTutorial.Data_Structures
                         var node = (WeightedGraphNode<T>)edge.Node2;
                         VT.Add(node, node.Clone());
                         MSF.AddNode(VT[node]);
+                        VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
                     }
                 }
                 else if (VT.ContainsKey(edge.Node2))
@@ -459,6 +475,7 @@ namespace PathfindingTutorial.Data_Structures
                     var node = (WeightedGraphNode<T>)edge.Node1;
                     VT.Add(node, node.Clone());
                     MSF.AddNode(VT[node]);
+                    VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
                 }
                 else
                 {
@@ -469,8 +486,8 @@ namespace PathfindingTutorial.Data_Structures
                     VT.Add(node2, node2.Clone());
                     MSF.AddNode(VT[node1]);
                     MSF.AddNode(VT[node2]);
+                    VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
                 }
-                VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
             }
 
             return MSF;

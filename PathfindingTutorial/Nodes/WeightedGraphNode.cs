@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -35,6 +36,14 @@ namespace PathfindingTutorial.Data_Structures
         {
             n1.AddNeighbor(n2, weight);
             n2.AddNeighbor(n1, weight);
+        }
+
+        public void RemoveMutualNeighbor(WeightedGraphNode<T> neighbor) => RemoveMutualNeighbor(this, neighbor);
+
+        public static void RemoveMutualNeighbor(WeightedGraphNode<T> n1, WeightedGraphNode<T> n2)
+        {
+            n1.RemoveNeighbor(n2);
+            n2.RemoveNeighbor(n1);
         }
 
         public (IGraphNode<T>, double) GetMinimumNeighbor()

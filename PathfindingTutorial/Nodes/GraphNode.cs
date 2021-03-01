@@ -24,6 +24,11 @@ namespace PathfindingTutorial.Data_Structures
             neighbors.Add(neighbor);
         }
 
+        public virtual void RemoveNeighbor(IGraphNode<T> neighbor)
+        {
+            neighbors.Remove(neighbor);
+        }
+
         public void SetValue(T Value)
         {
             value = Value;
