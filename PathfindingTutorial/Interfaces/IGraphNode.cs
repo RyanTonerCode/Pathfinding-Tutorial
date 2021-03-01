@@ -14,6 +14,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public void RemoveNeighbor(IGraphNode<T> neighbor);
 
+        public bool Marked { get; set; }
+
         public static void AddMutualNeighbor(IGraphNode<T> a, IGraphNode<T> b)
         {
             a.AddNeighbor(b);

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -13,16 +11,16 @@ namespace PathfindingTutorial.Data_Structures
         /// Returns a list of all edges sorted in order by weight
         /// </summary>
         /// <returns></returns>
-        public List<Edge<T>> SortedEdgeList()
+        public List<Edge<T>> GetSortedEdgeList()
         {
-            List<Edge<T>> edges = EdgeList();
+            List<Edge<T>> edges = GetEdgeList();
 
             edges.Sort((x, y) => x.Weight.CompareTo(y.Weight));
 
             return edges;
         }
 
-        public List<Edge<T>> EdgeList()
+        public List<Edge<T>> GetEdgeList()
         {
             var edges = new List<Edge<T>>();
 
@@ -38,9 +36,9 @@ namespace PathfindingTutorial.Data_Structures
             return edges;
         }
 
-        public List<Edge<T>> EdgeListUndirected()
+        public List<Edge<T>> GetEdgeListUndirected()
         {
-            var edgeList = SortedEdgeList();
+            var edgeList = GetSortedEdgeList();
 
             for(int i = 0; i < edgeList.Count; i++)
             {
@@ -53,7 +51,6 @@ namespace PathfindingTutorial.Data_Structures
                         break;
                     if(findDupe.Node2 == edge.Node1 && findDupe.Node1 == edge.Node2)
                     {
-                        //edgeList[i] = edgeList[j];
                         edgeList.RemoveAt(j);
                         break;
                     }
@@ -78,7 +75,6 @@ namespace PathfindingTutorial.Data_Structures
             graphStructure = new List<IGraphNode<T>>(nodes.Length);
             foreach (var n in nodes)
                 graphStructure.Add(n);
-            
         }
 
         public Graph(List<IGraphNode<T>> graph)
@@ -106,7 +102,8 @@ namespace PathfindingTutorial.Data_Structures
 
             stk.Push(begin);
 
-            List<IGraphNode<T>> marked = new List<IGraphNode<T>>();
+            //this is our "marked" set
+            var marked = new List<IGraphNode<T>>();
 
             while (stk.Count > 0)
             {
@@ -140,7 +137,7 @@ namespace PathfindingTutorial.Data_Structures
             queue.Enqueue(begin);
 
             //this is our "marked" set
-            List<IGraphNode<T>> marked = new List<IGraphNode<T>>();
+            var marked = new List<IGraphNode<T>>();
 
             while (queue.Count > 0)
             {
@@ -152,8 +149,7 @@ namespace PathfindingTutorial.Data_Structures
 
                 if (marked.Contains(cur.Node))
                     continue;
-
-                marked.Add((WeightedCoordinateGraphNode<T>)cur.Node);
+                marked.Add(cur.Node);
 
 
                 //add all new nodes to the stack
@@ -174,7 +170,7 @@ namespace PathfindingTutorial.Data_Structures
             dataStructure.Add(begin);
 
             //this is our "marked" set
-            HashSet<IGraphNode<T>> marked = new HashSet<IGraphNode<T>>();
+            var marked = new HashSet<IGraphNode<T>>();
 
             while (!dataStructure.IsEmpty())
             {
@@ -201,13 +197,13 @@ namespace PathfindingTutorial.Data_Structures
         {
             LastSearchSpace = 0;
 
-            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
+            var priQueue = new Heap<WeightedNodePath<T>>(64);
 
             var begin = new WeightedNodePath<T>(Start,null,0);
             priQueue.Enqueue(begin);
 
             //this is our "marked" set
-            HashSet<WeightedGraphNode<T>> marked = new HashSet<WeightedGraphNode<T>>();
+            var marked = new HashSet<WeightedGraphNode<T>>();
 
             while (!priQueue.IsEmpty())
             {
@@ -286,8 +282,8 @@ namespace PathfindingTutorial.Data_Structures
                         //the neighbor is visited, or "found," by the current node.
                         visitedByMap.Add(neighbor, cur.Node);
                     }
-                    //if the neighbor is already visited by another node than the current node,
-                    //and if the current node is visited by another node than the neighbor,
+                    //if the neighbor is already visited by another node other than the current node,
+                    //and if the current node is visited by another node other than the neighbor,
                     //it means we have found a cycle i.e. another path it is possible to reach the neighbor
                     else if (visitedByMap[cur.Node] != neighbor && visitedByMap[neighbor] != cur.Node)
                         return true;
@@ -301,13 +297,13 @@ namespace PathfindingTutorial.Data_Structures
         {
             LastSearchSpace = 0;
 
-            IPriorityQueue<WeightedNodePath<T>> priQueue = new Heap<WeightedNodePath<T>>(64);
+            var priQueue = new Heap<WeightedNodePath<T>>(64);
 
             var begin = new WeightedNodePath<T>(Start, null, 0);
             priQueue.Enqueue(begin);
 
             //this is our "marked" set
-            HashSet<WeightedGraphNode<T>> marked = new HashSet<WeightedGraphNode<T>>();
+            var marked = new HashSet<WeightedGraphNode<T>>();
 
             while (!priQueue.IsEmpty())
             {
@@ -376,7 +372,7 @@ namespace PathfindingTutorial.Data_Structures
             VT.Add(arb_node, arb_node.Clone());
 
             //obtain sorted edge list for G
-            var sortedEdgeList = SortedEdgeList();
+            var sortedEdgeList = GetSortedEdgeList();
 
             //edge list for the MST
             var ET = new List<Edge<T>>();
@@ -440,7 +436,7 @@ namespace PathfindingTutorial.Data_Structures
             var VT = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
 
             //obtain sorted edge list for G
-            var sortedEdgeList = EdgeListUndirected();
+            var sortedEdgeList = GetEdgeListUndirected();
 
             Graph<T> MSF = new Graph<T>();
 
@@ -493,7 +489,72 @@ namespace PathfindingTutorial.Data_Structures
             return MSF;
         }
 
-        public void PrintNodeInfo()
+        public List<Graph<T>> FindConnectedComponents()
+        {
+            if (graphStructure.Count == 0)
+                throw new Exception("Empty graph");
+
+            var components = new List<Graph<T>>();
+
+            var queue = new Queue<NodePath<T>>();
+
+            var nodes = new List<IGraphNode<T>>();
+            foreach (var node in graphStructure)
+                nodes.Add(node);
+
+            var begin = new NodePath<T>(nodes[0], null);
+
+            queue.Enqueue(begin);
+
+            var component = new Graph<T>();
+
+            //this is our "marked" set
+            var marked = new List<IGraphNode<T>>();
+
+            void checkMore()
+            {
+                if (queue.Count == 0)
+                {
+                    components.Add(component);
+                    if (nodes.Count > 0)
+                    {
+                        queue.Enqueue(new NodePath<T>(nodes[0], null));
+                        component = new Graph<T>();
+                    }
+                }
+            }
+
+            while (queue.Count > 0)
+            {
+
+                NodePath<T> cur = queue.Dequeue();
+
+                if (marked.Contains(cur.Node)) {
+                    checkMore();
+                    continue;
+                }
+                marked.Add(cur.Node);
+                component.AddNode(cur.Node);
+                nodes.Remove(cur.Node);
+
+                //add all new nodes to the stack
+                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
+                    if (!marked.Contains(neighbor)) //unmarked neighbor
+                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+
+                checkMore();
+            }
+
+            return components;
+        }
+
+        public void PrintNodes()
+        {
+            foreach (var n in graphStructure)
+                Console.WriteLine(n);
+        }
+
+        public void PrintEdges()
         {
             foreach(var n in graphStructure)
                 foreach(var neighbor in n.GetNeighbors())

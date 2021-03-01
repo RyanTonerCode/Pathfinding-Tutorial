@@ -27,7 +27,7 @@ namespace PathfindingTutorial
 
             var g = G.KruskalsAlgorithmForMinimumSpanningForest();
 
-            var edges = g.EdgeListUndirected();
+            var edges = g.GetEdgeListUndirected();
 
             foreach (var edge in edges)
             {

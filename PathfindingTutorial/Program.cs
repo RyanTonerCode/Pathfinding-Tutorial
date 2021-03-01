@@ -9,12 +9,22 @@ namespace PathfindingTutorial
         public const int MaxQueueSize = 10000000;
         public const int MaxHeapSize = 10000000;
 
-        private enum SUBPROGRAM { STACK_VS_QUEUE, MAKE_GRAPH, MAKE_WEIGHTED_GRAPH, MAKE_MAZE, SOLVE_SINGLE_PUZZLE, SOLVE_MANY_PUZZLES, MAKE_FSM, MIN_SPANNING_TREE_PRIM, MIN_SPANNING_TREE_KRUSKAL };
+        private enum SUBPROGRAM { 
+            STACK_VS_QUEUE, 
+            MAKE_GRAPH, MAKE_WEIGHTED_GRAPH, 
+            MAKE_MAZE, 
+            SOLVE_SINGLE_PUZZLE, 
+            SOLVE_MANY_PUZZLES,
+            MAKE_FSM, 
+            MIN_SPANNING_TREE_PRIM, 
+            MIN_SPANNING_TREE_KRUSKAL,
+            FIND_COMPONENTS
+        };
 
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.MIN_SPANNING_TREE_KRUSKAL;
+            SUBPROGRAM sp = SUBPROGRAM.FIND_COMPONENTS;
 
             switch (sp)
             {
@@ -54,6 +64,9 @@ namespace PathfindingTutorial
                     break;
                 case SUBPROGRAM.MIN_SPANNING_TREE_KRUSKAL:
                     MakeKruskals();
+                    break;
+                case SUBPROGRAM.FIND_COMPONENTS:
+                    MakeComponents();
                     break;
             }
 

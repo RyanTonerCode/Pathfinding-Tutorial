@@ -30,9 +30,9 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
-        public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight) => AddMutualNeighbor(this, neighbor, weight);
+        public void AddMutualNeighbor(WeightedGraphNode<T> neighbor, double weight = 1) => AddMutualNeighbor(this, neighbor, weight);
 
-        public static void AddMutualNeighbor(WeightedGraphNode<T> n1, WeightedGraphNode<T> n2, double weight)
+        public static void AddMutualNeighbor(WeightedGraphNode<T> n1, WeightedGraphNode<T> n2, double weight = 1)
         {
             n1.AddNeighbor(n2, weight);
             n2.AddNeighbor(n1, weight);

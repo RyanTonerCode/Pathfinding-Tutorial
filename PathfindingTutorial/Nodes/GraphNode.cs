@@ -9,6 +9,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public bool Marked = false;
 
+        bool IGraphNode<T>.Marked { get; set; }
+
         public GraphNode(T value)
         {
             this.value = value;
@@ -37,6 +39,11 @@ namespace PathfindingTutorial.Data_Structures
         public T GetValue()
         {
             return value;
+        }
+
+        public override string ToString()
+        {
+            return value.ToString();
         }
 
     }
