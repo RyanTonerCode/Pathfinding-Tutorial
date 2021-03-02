@@ -1,11 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace PathfindingTutorial.Data_Structures
 {
     public class Graph<T> : IGraph<T>
     {
         private readonly List<IGraphNode<T>> graphStructure = new List<IGraphNode<T>>();
+
+        public int[,] GetAdjacencyMatrix()
+        {
+            //initialize the adjacency matrix
+            var adjacencyMatrix = new int[graphStructure.Count, graphStructure.Count];
+
+            //associate each node to a unique integer
+            var nodeMap = new Dictionary<IGraphNode<T>, int>();
+
+            for (int i = 0; i < graphStructure.Count; i++)
+                nodeMap.Add(graphStructure[i], i);
+
+            for (int i = 0; i < graphStructure.Count; i++)
+            {
+                var node = graphStructure[i];
+                var neighbors = node.GetNeighbors();
+                foreach(var n in neighbors)
+                    adjacencyMatrix[i, nodeMap[n]] = 1;
+            }
+
+            return adjacencyMatrix;
+        }
 
         /// <summary>
         /// Returns a list of all edges sorted in order by weight
@@ -38,26 +61,27 @@ namespace PathfindingTutorial.Data_Structures
 
         public List<Edge<T>> GetEdgeListUndirected()
         {
-            var edgeList = GetSortedEdgeList();
+            var edges = new List<Edge<T>>();
 
-            for(int i = 0; i < edgeList.Count; i++)
+            var adjacencyMatrix = GetAdjacencyMatrix();
+
+            for (int i = 0; i < graphStructure.Count; i++)
             {
-                var edge = edgeList[i];
-                int j = i;
-                while(j++ <= edgeList.Count)
+                var node1 = graphStructure[i];
+                for (int j = i + 1; j < graphStructure.Count; j++)
                 {
-                    var findDupe = edgeList[j];
-                    if (findDupe.Weight > edge.Weight)
-                        break;
-                    if(findDupe.Node2 == edge.Node1 && findDupe.Node1 == edge.Node2)
+                    if(adjacencyMatrix[i,j] == 1)
                     {
-                        edgeList.RemoveAt(j);
-                        break;
+                        var node2 = graphStructure[j];
+                        if (node1 is WeightedGraphNode<T> wgn)
+                            edges.Add(new Edge<T>(node1, node2, wgn.EdgeWeights[node2], false));
+                        else
+                            edges.Add(new Edge<T>(node1, node2, Directed:false));
                     }
                 }
             }
 
-            return edgeList;
+            return edges;
         }
 
         /// <summary>
@@ -108,19 +132,19 @@ namespace PathfindingTutorial.Data_Structures
             while (stk.Count > 0)
             {
                 LastSearchSpace++;
-                NodePath<T> cur = stk.Pop();
+                var top = stk.Pop();
 
-                if (cur.Node == End)
-                    return cur;
+                if (top.Node == End)
+                    return top;
 
-                if (marked.Contains(cur.Node))
+                if (marked.Contains(top.Node))
                     continue;
-                marked.Add(cur.Node);
+                marked.Add(top.Node);
 
                 //add all new nodes to the stack
-                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
+                foreach (IGraphNode<T> neighbor in top.Node.GetNeighbors())
                     if (!marked.Contains(neighbor))
-                        stk.Push(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+                        stk.Push(new NodePath<T>(neighbor, top, top.PathLength + 1));
             }
 
             return null;
@@ -141,21 +165,21 @@ namespace PathfindingTutorial.Data_Structures
 
             while (queue.Count > 0)
             {
-                NodePath<T> cur = queue.Dequeue();
+                var front = queue.Dequeue();
 
                 LastSearchSpace++;
-                if (cur.Node == End)
-                    return cur;
+                if (front.Node == End)
+                    return front;
 
-                if (marked.Contains(cur.Node))
+                if (marked.Contains(front.Node))
                     continue;
-                marked.Add(cur.Node);
+                marked.Add(front.Node);
 
 
                 //add all new nodes to the stack
-                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
+                foreach (IGraphNode<T> neighbor in front.Node.GetNeighbors())
                     if (!marked.Contains(neighbor)) //unmarked neighbor
-                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+                        queue.Enqueue(new NodePath<T>(neighbor, front, front.PathLength + 1));
             }
 
             return null;
@@ -174,7 +198,7 @@ namespace PathfindingTutorial.Data_Structures
 
             while (!dataStructure.IsEmpty())
             {
-                NodePath<T> cur = dataStructure.Remove();
+                var cur = dataStructure.Remove();
 
                 LastSearchSpace++;
                 if (cur.Node == End)
@@ -207,13 +231,13 @@ namespace PathfindingTutorial.Data_Structures
 
             while (!priQueue.IsEmpty())
             {
-                WeightedNodePath<T> cur = priQueue.Dequeue();
+                var front = priQueue.Dequeue();
 
                 LastSearchSpace++;
-                if (cur.Node == End)
-                    return cur;
+                if (front.Node == End)
+                    return front;
 
-                var wgn = (WeightedGraphNode<T>)cur.Node;
+                var wgn = (WeightedGraphNode<T>)front.Node;
 
                 if (marked.Contains(wgn))
                     continue;
@@ -221,15 +245,15 @@ namespace PathfindingTutorial.Data_Structures
                 marked.Add(wgn);
 
                 //add all new nodes to the stack
-                foreach (var neighbor in cur.Node.GetNeighbors())
+                foreach (var neighbor in front.Node.GetNeighbors())
                     if (!marked.Contains((WeightedGraphNode<T>)neighbor))
                     { //unmarked neighbor
 
-                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+                        double edge_weight = ((WeightedGraphNode<T>)front.Node).EdgeWeights[neighbor];
 
-                        double new_weight = cur.PathWeightToHere + edge_weight;
+                        double new_weight = front.PathWeightToHere + edge_weight;
 
-                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, cur.PathLength + 1));
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, front, new_weight, front.PathLength + 1));
                     }
             }
 
@@ -261,12 +285,12 @@ namespace PathfindingTutorial.Data_Structures
 
             while (!queue.IsEmpty())
             {
-                var cur = queue.Dequeue();
+                var front = queue.Dequeue();
 
                 LastSearchSpace++;
 
                 //add all new nodes to the stack
-                foreach (var neighbor in cur.Node.GetNeighbors())
+                foreach (var neighbor in front.Node.GetNeighbors())
                 {
                     //do not process the endpoint more than once
                     if (neighbor == endpoint)
@@ -277,15 +301,15 @@ namespace PathfindingTutorial.Data_Structures
                     if (!neighborVisited)
                     {   //process the unvisited neighbor
                         //add the neighbor to the queue
-                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+                        queue.Enqueue(new NodePath<T>(neighbor, front, front.PathLength + 1));
 
                         //the neighbor is visited, or "found," by the current node.
-                        visitedByMap.Add(neighbor, cur.Node);
+                        visitedByMap.Add(neighbor, front.Node);
                     }
                     //if the neighbor is already visited by another node other than the current node,
                     //and if the current node is visited by another node other than the neighbor,
                     //it means we have found a cycle i.e. another path it is possible to reach the neighbor
-                    else if (visitedByMap[cur.Node] != neighbor && visitedByMap[neighbor] != cur.Node)
+                    else if (visitedByMap[front.Node] != neighbor && visitedByMap[neighbor] != front.Node)
                         return true;
                 }
             }
@@ -307,23 +331,23 @@ namespace PathfindingTutorial.Data_Structures
 
             while (!priQueue.IsEmpty())
             {
-                WeightedNodePath<T> cur = priQueue.Dequeue();
+                var front = priQueue.Dequeue();
 
                 LastSearchSpace++;
-                if (cur.Node == End)
-                    return cur;
+                if (front.Node == End)
+                    return front;
 
-                var wgn = (WeightedGraphNode<T>)cur.Node;
+                var wgn = (WeightedGraphNode<T>)front.Node;
 
                 if (marked.Contains(wgn))
                     continue;
 
                 marked.Add(wgn);
 
-                var newPathLength = cur.PathLength + 1;
+                var newPathLength = front.PathLength + 1;
 
                 //add all new nodes to the stack
-                foreach (var neighbor in cur.Node.GetNeighbors())
+                foreach (var neighbor in front.Node.GetNeighbors())
                 {
 
                     var w_neighbor = (WeightedGraphNode<T>)neighbor;
@@ -331,7 +355,7 @@ namespace PathfindingTutorial.Data_Structures
                     if (!marked.Contains(w_neighbor))
                     { //unmarked neighbor
 
-                        double edge_weight = ((WeightedGraphNode<T>)cur.Node).EdgeWeights[neighbor];
+                        double edge_weight = ((WeightedGraphNode<T>)front.Node).EdgeWeights[neighbor];
 
                         //this is a somewhat complex weight function
                         //it adds the path length g(x)
@@ -340,7 +364,7 @@ namespace PathfindingTutorial.Data_Structures
                         //so the formula is g(x) + e(x) + h(x)
                         double new_weight = newPathLength + edge_weight + heuristic(w_neighbor);
 
-                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, cur, new_weight, newPathLength));
+                        priQueue.Enqueue(new WeightedNodePath<T>(neighbor, front, new_weight, newPathLength));
                     }
                 }
             }
@@ -355,29 +379,29 @@ namespace PathfindingTutorial.Data_Structures
                 throw new Exception("Empty graph");
 
             //nodes in this graph (G)
-            var RemainingNodesInOriginal = new HashSet<IGraphNode<T>>(graphStructure.Count);
+            var remainingNodesInOriginal = new HashSet<IGraphNode<T>>(graphStructure.Count);
             foreach (var node in graphStructure)
-                RemainingNodesInOriginal.Add(node);
+                remainingNodesInOriginal.Add(node);
 
-            //Dictionary associates nodes in G as keys with nodes in MST(G) as values
-            var VT = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
+            //Dictionary associates nodes in V(G) as keys with nodes in V(MST_G) as values
+            var vertexMap = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
 
             //pick an arbitrary node
             var arb_node = (WeightedGraphNode<T>)graphStructure[0];
 
             //remove it from the original set
-            RemainingNodesInOriginal.Remove(arb_node);
+            remainingNodesInOriginal.Remove(arb_node);
 
             //place on the MST nodes
-            VT.Add(arb_node, arb_node.Clone());
+            vertexMap.Add(arb_node, arb_node.Clone());
 
             //obtain sorted edge list for G
             var sortedEdgeList = GetSortedEdgeList();
 
-            //edge list for the MST
-            var ET = new List<Edge<T>>();
+            //initialize the minimum spanning tree with the arbitrary node
+            Graph<T> MST = new Graph<T>(vertexMap[arb_node]);
 
-            while(RemainingNodesInOriginal.Count != 0)
+            while(remainingNodesInOriginal.Count > 0)
             {
                 //find the minimum edge, such that the first node is in the MST's nodes, and the second is in the remaining of G's nodes
                 for (int i = 0; i < sortedEdgeList.Count; i++)
@@ -385,44 +409,40 @@ namespace PathfindingTutorial.Data_Structures
                     //the min edge
                     Edge<T> e = sortedEdgeList[i];
 
+                    WeightedGraphNode<T> oldNode = null;
                     WeightedGraphNode<T> newNode = null;
 
-                    if (VT.ContainsKey((WeightedGraphNode<T>)e.Node1) && RemainingNodesInOriginal.Contains(e.Node2))
+                    if (vertexMap.ContainsKey((WeightedGraphNode<T>)e.Node1) && remainingNodesInOriginal.Contains(e.Node2))
                     {
+                        oldNode = (WeightedGraphNode<T>)e.Node1;
                         //a new node to add to the MST
                         newNode = (WeightedGraphNode<T>)e.Node2;
-                        ET.Add(e);
                     }
 
-                    if (VT.ContainsKey((WeightedGraphNode<T>)e.Node2) && RemainingNodesInOriginal.Contains(e.Node1))
+                    if (vertexMap.ContainsKey((WeightedGraphNode<T>)e.Node2) && remainingNodesInOriginal.Contains(e.Node1))
                     {
+                        oldNode = (WeightedGraphNode<T>)e.Node2;
                         //a new node to add to the MST
                         newNode = (WeightedGraphNode<T>)e.Node1;
-                        ET.Add(e.FlipDirection());
                     }
 
                     if (newNode != null)
                     {
-                        VT.Add(newNode, newNode.Clone());
-                        RemainingNodesInOriginal.Remove(newNode);
+                        var newNodeClone = newNode.Clone();
+                        vertexMap.Add(newNode, newNodeClone);
+                        MST.AddNode(newNodeClone);
+                        newNodeClone.AddMutualNeighbor(vertexMap[oldNode], e.Weight);
 
+                        //remove the new node from processing
+                        remainingNodesInOriginal.Remove(newNode);
+
+                        //remove this edge from the sorted edge list
                         sortedEdgeList.RemoveAt(i);
                         break;
                     }
                 }
 
             }
-
-            Graph<T> MST = new Graph<T>();
-
-            foreach (var edge in ET)
-            {
-                //link up the clones
-                VT[(WeightedGraphNode<T>)edge.Node1].AddNeighbor(VT[(WeightedGraphNode<T>)edge.Node2], edge.Weight);
-            }
-
-            foreach (var node in VT)
-                MST.AddNode(node.Value);
 
             return MST;
         }
@@ -433,7 +453,7 @@ namespace PathfindingTutorial.Data_Structures
                 throw new Exception("Empty graph");
 
             //Dictionary associates nodes in G as keys with nodes in MST(G) as values
-            var VT = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
+            var vertexMap = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
 
             //obtain sorted edge list for G
             var sortedEdgeList = GetEdgeListUndirected();
@@ -442,17 +462,17 @@ namespace PathfindingTutorial.Data_Structures
 
             foreach (var edge in sortedEdgeList)
             {
-                if (VT.ContainsKey(edge.Node1)) {
+                if (vertexMap.ContainsKey(edge.Node1)) {
 
-                    if (VT.ContainsKey(edge.Node2))
+                    if (vertexMap.ContainsKey(edge.Node2))
                     {
                         //add this test edge to the graph
-                        VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+                        vertexMap[edge.Node1].AddMutualNeighbor(vertexMap[edge.Node2], edge.Weight);
 ;
                         //Since this edge contains both endpoints already in the MSF, check to see if a cycle is created.
-                        if (MSF.CheckForUndirectedCycleUsingBFS(VT[edge.Node1])) {
+                        if (MSF.CheckForUndirectedCycleUsingBFS(vertexMap[edge.Node1])) {
                             //a cycle is created, so skip this edge.
-                            VT[edge.Node1].RemoveMutualNeighbor(VT[edge.Node2]);
+                            vertexMap[edge.Node1].RemoveMutualNeighbor(vertexMap[edge.Node2]);
                             continue;
                         }
                     }
@@ -460,29 +480,29 @@ namespace PathfindingTutorial.Data_Structures
                     {
                         //add the second node to the list
                         var node = (WeightedGraphNode<T>)edge.Node2;
-                        VT.Add(node, node.Clone());
-                        MSF.AddNode(VT[node]);
-                        VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+                        vertexMap.Add(node, node.Clone());
+                        MSF.AddNode(vertexMap[node]);
+                        vertexMap[edge.Node1].AddMutualNeighbor(vertexMap[edge.Node2], edge.Weight);
                     }
                 }
-                else if (VT.ContainsKey(edge.Node2))
+                else if (vertexMap.ContainsKey(edge.Node2))
                 {
                     //add the first node to the list
                     var node = (WeightedGraphNode<T>)edge.Node1;
-                    VT.Add(node, node.Clone());
-                    MSF.AddNode(VT[node]);
-                    VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+                    vertexMap.Add(node, node.Clone());
+                    MSF.AddNode(vertexMap[node]);
+                    vertexMap[edge.Node1].AddMutualNeighbor(vertexMap[edge.Node2], edge.Weight);
                 }
                 else
                 {
                     //add both nodes to the list
                     var node1 = (WeightedGraphNode<T>)edge.Node1;
                     var node2 = (WeightedGraphNode<T>)edge.Node2;
-                    VT.Add(node1, node1.Clone());
-                    VT.Add(node2, node2.Clone());
-                    MSF.AddNode(VT[node1]);
-                    MSF.AddNode(VT[node2]);
-                    VT[edge.Node1].AddMutualNeighbor(VT[edge.Node2], edge.Weight);
+                    vertexMap.Add(node1, node1.Clone());
+                    vertexMap.Add(node2, node2.Clone());
+                    MSF.AddNode(vertexMap[node1]);
+                    MSF.AddNode(vertexMap[node2]);
+                    vertexMap[edge.Node1].AddMutualNeighbor(vertexMap[edge.Node2], edge.Weight);
                 }
             }
 
@@ -498,27 +518,27 @@ namespace PathfindingTutorial.Data_Structures
 
             var queue = new Queue<NodePath<T>>();
 
-            var nodes = new List<IGraphNode<T>>();
+            var remainingNodesInOriginal = new List<IGraphNode<T>>();
             foreach (var node in graphStructure)
-                nodes.Add(node);
+                remainingNodesInOriginal.Add(node);
 
-            var begin = new NodePath<T>(nodes[0], null);
+            var arb_node = new NodePath<T>(remainingNodesInOriginal[0], null);
 
-            queue.Enqueue(begin);
+            queue.Enqueue(arb_node);
 
             var component = new Graph<T>();
 
             //this is our "marked" set
             var marked = new List<IGraphNode<T>>();
 
-            void checkMore()
+            void processMoreNodes()
             {
                 if (queue.Count == 0)
                 {
                     components.Add(component);
-                    if (nodes.Count > 0)
+                    if (remainingNodesInOriginal.Count > 0)
                     {
-                        queue.Enqueue(new NodePath<T>(nodes[0], null));
+                        queue.Enqueue(new NodePath<T>(remainingNodesInOriginal[0], null));
                         component = new Graph<T>();
                     }
                 }
@@ -526,26 +546,44 @@ namespace PathfindingTutorial.Data_Structures
 
             while (queue.Count > 0)
             {
+                NodePath<T> front = queue.Dequeue();
 
-                NodePath<T> cur = queue.Dequeue();
-
-                if (marked.Contains(cur.Node)) {
-                    checkMore();
+                if (marked.Contains(front.Node)) {
+                    processMoreNodes();
                     continue;
                 }
-                marked.Add(cur.Node);
-                component.AddNode(cur.Node);
-                nodes.Remove(cur.Node);
+                marked.Add(front.Node);
+                component.AddNode(front.Node);
+                remainingNodesInOriginal.Remove(front.Node);
 
                 //add all new nodes to the stack
-                foreach (IGraphNode<T> neighbor in cur.Node.GetNeighbors())
+                foreach (IGraphNode<T> neighbor in front.Node.GetNeighbors())
                     if (!marked.Contains(neighbor)) //unmarked neighbor
-                        queue.Enqueue(new NodePath<T>(neighbor, cur, cur.PathLength + 1));
+                        queue.Enqueue(new NodePath<T>(neighbor, front, front.PathLength + 1));
 
-                checkMore();
+                processMoreNodes();
             }
 
             return components;
+        }
+
+        public void PrintAdjacencyMatrix()
+        {
+            var sb = new StringBuilder("   ");
+            var adjacencyMatrix = GetAdjacencyMatrix();
+
+            for (int i = 0; i < graphStructure.Count; i++)
+                sb.Append(i + " ");
+
+            sb.AppendLine();
+            for (int i = 0; i < graphStructure.Count; i++)
+            {
+                sb.Append(i + ": ");
+                for (int j = 0; j < graphStructure.Count; j++)
+                    sb.Append(adjacencyMatrix[i,j] + " ");
+                sb.AppendLine();
+            }
+            Console.WriteLine(sb);
         }
 
         public void PrintNodes()
@@ -556,17 +594,18 @@ namespace PathfindingTutorial.Data_Structures
 
         public void PrintEdges()
         {
-            foreach(var n in graphStructure)
-                foreach(var neighbor in n.GetNeighbors())
-                {
-                    Console.Write("({0},{1})", n.GetValue(), neighbor.GetValue());
+            var edges = GetEdgeList();
 
-                    if (n is WeightedGraphNode<T> wgn)
-                    {
-                        Console.Write(" : {0}", wgn.EdgeWeights[neighbor]);
-                    }
-                    Console.WriteLine();
-                }
+            foreach (var edge in edges)
+                Console.WriteLine(edge);
+        }
+
+        public void PrintEdgesUndirected()
+        {
+            var edges = GetEdgeListUndirected();
+
+            foreach(var edge in edges)
+                Console.WriteLine(edge);
         }
 
     }

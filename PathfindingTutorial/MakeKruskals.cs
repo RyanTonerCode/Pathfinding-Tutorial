@@ -25,9 +25,11 @@ namespace PathfindingTutorial
 
             var G = new Graph<char>(A, B, C, D, E, F);
 
-            var g = G.KruskalsAlgorithmForMinimumSpanningForest();
+            G.PrintAdjacencyMatrix();
 
-            var edges = g.GetEdgeListUndirected();
+            var MSF_G = G.KruskalsAlgorithmForMinimumSpanningForest();
+
+            var edges = MSF_G.GetEdgeListUndirected();
 
             foreach (var edge in edges)
             {

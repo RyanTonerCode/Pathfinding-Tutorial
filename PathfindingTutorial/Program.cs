@@ -24,7 +24,7 @@ namespace PathfindingTutorial
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.FIND_COMPONENTS;
+            SUBPROGRAM sp = SUBPROGRAM.MIN_SPANNING_TREE_PRIM;
 
             switch (sp)
             {

@@ -12,17 +12,19 @@ namespace PathfindingTutorial.Data_Structures
         public IGraphNode<T> Node1 { get; private set; }
         public IGraphNode<T> Node2 { get; private set; }
         public double Weight { get; private set; }
+        public bool Directed { get; private set; }
 
-        public Edge(IGraphNode<T> Node1, IGraphNode<T> Node2, double Weight = 1)
+        public Edge(IGraphNode<T> Node1, IGraphNode<T> Node2, double Weight = 1, bool Directed = true)
         {
             this.Node1 = Node1;
             this.Node2 = Node2;
             this.Weight = Weight;
+            this.Directed = Directed;
         }
 
         public Edge<T> FlipDirection()
         {
-            return new Edge<T>(Node2, Node1, Weight);
+            return new Edge<T>(Node2, Node1, Weight, Directed);
         }
 
         public int CompareTo(object obj)
@@ -34,7 +36,10 @@ namespace PathfindingTutorial.Data_Structures
 
         public override string ToString()
         {
-            return Node1.GetValue() + " --> " + Node2.GetValue() + " (" + Weight + ")";
+            if(Directed)
+                return Node1.GetValue() + " --> " + Node2.GetValue() + " (" + Weight + ")";
+            else
+                return Node1.GetValue() + " <--> " + Node2.GetValue() + " (" + Weight + ")";
         }
 
     }
