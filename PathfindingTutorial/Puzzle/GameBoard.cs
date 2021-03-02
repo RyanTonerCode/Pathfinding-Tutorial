@@ -308,17 +308,17 @@ namespace PathfindingTutorial.Puzzle
             {
                 var (X, _) = GetGridVal(i);
                 if(X == 0)
-                    sb.Append("[");
+                    sb.Append('[');
 
                 if (!t.IsBlank)
                     sb.Append(t.Value);
                 else
-                    sb.Append("X");
+                    sb.Append('X');
 
                 if (X < Width - 1)
-                    sb.Append(" ");
+                    sb.Append(' ');
                 else
-                    sb.Append("]").AppendLine();
+                    sb.Append(']').AppendLine();
                 i++;
             }
             print = sb.ToString();

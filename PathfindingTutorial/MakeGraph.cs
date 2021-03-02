@@ -8,13 +8,13 @@ namespace PathfindingTutorial
         static void MakeGraph()
         {
             //Create the vertex set
-            GraphNode<char> A = new GraphNode<char>('A');
-            GraphNode<char> B = new GraphNode<char>('B');
-            GraphNode<char> C = new GraphNode<char>('C');
-            GraphNode<char> D = new GraphNode<char>('D');
-            GraphNode<char> E = new GraphNode<char>('E');
-            GraphNode<char> F = new GraphNode<char>('F');
-            GraphNode<char> G = new GraphNode<char>('G');
+            var A = new GraphNode<char>('A');
+            var B = new GraphNode<char>('B');
+            var C = new GraphNode<char>('C');
+            var D = new GraphNode<char>('D');
+            var E = new GraphNode<char>('E');
+            var F = new GraphNode<char>('F');
+            var G = new GraphNode<char>('G');
 
             //Create the edge set
             A.AddNeighbor(D);

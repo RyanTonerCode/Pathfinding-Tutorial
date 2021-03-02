@@ -28,5 +28,7 @@ namespace PathfindingTutorial.Data_Structures
             b.RemoveNeighbor(a);
         }
 
+        public IGraphNode<T> Clone();
+
     }
 }

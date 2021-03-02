@@ -46,5 +46,12 @@ namespace PathfindingTutorial.Data_Structures
             return value.ToString();
         }
 
+        public IGraphNode<T> Clone()
+        {
+            var cln = new GraphNode<T>(value);
+
+            return cln;
+        }
+
     }
 }

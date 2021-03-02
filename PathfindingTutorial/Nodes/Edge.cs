@@ -1,5 +1,6 @@
 ﻿using PathfindingTutorial.Data_Structures;
 using System;
+using System.Text;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -36,10 +37,18 @@ namespace PathfindingTutorial.Data_Structures
 
         public override string ToString()
         {
-            if(Directed)
-                return Node1.GetValue() + " --> " + Node2.GetValue() + " (" + Weight + ")";
+            var sb = new StringBuilder();
+            sb.Append(Node1.GetValue());
+            if (Directed)
+                sb.Append(" --> ");
             else
-                return Node1.GetValue() + " <--> " + Node2.GetValue() + " (" + Weight + ")";
+                sb.Append(" <--> ");
+
+            sb.Append(Node2.GetValue());
+            if (Node1 is WeightedGraphNode<T> || Node2 is WeightedGraphNode<T>)
+                sb.Append(" (").Append(Weight).Append(')');
+
+            return sb.ToString();
         }
 
     }

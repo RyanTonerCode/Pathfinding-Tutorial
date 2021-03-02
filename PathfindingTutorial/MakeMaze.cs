@@ -59,18 +59,21 @@ namespace PathfindingTutorial
                 }
             }
 
+            var startingNode = grid[1, 0];
+            var endingNode = grid[19, 45];
+
             //try to find a solution quickly with dfs
-            var finalDFS = graph.RunDFS(grid[1, 0], grid[19, 45]);
+            var finalDFS = graph.RunDFS(startingNode, endingNode);
 
             ShowMazeSolution(finalDFS);
 
             //try to find optimal solution with bfs
-            var finalBFS = graph.RunBFS(grid[1, 0], grid[19, 45]);
+            var finalBFS = graph.RunBFS(startingNode, endingNode);
 
             ShowMazeSolution(finalBFS);
 
             //Use dijkstra to also find shortest path
-            var finalDijkstra = graph.RunDijkstra(grid[1, 0], grid[19, 45]);
+            var finalDijkstra = graph.RunDijkstra(startingNode, endingNode);
 
             ShowMazeSolution(finalDijkstra);
 
@@ -81,10 +84,9 @@ namespace PathfindingTutorial
             }
 
             //Use a* instead to try to get the best path faster
-            var finalA_Star = graph.RunA_Star(grid[1, 0], grid[19, 45], heuristic);
+            var finalA_Star = graph.RunA_Star(startingNode, endingNode, heuristic);
 
             ShowMazeSolution(finalA_Star);
-
         }
 
         static void PrintGrid(WeightedGraphNode<string>[,] grid)
