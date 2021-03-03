@@ -10,6 +10,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public List<IGraphNode<T>> GetNeighbors();
 
+        public int GetDegree();
+
         public void AddNeighbor(IGraphNode<T> neighbor);
 
         public void RemoveNeighbor(IGraphNode<T> neighbor);

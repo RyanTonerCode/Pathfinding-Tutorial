@@ -5,7 +5,7 @@ namespace PathfindingTutorial.Data_Structures
     public class GraphNode<T> : IGraphNode<T>
     {
         protected T value = default;
-        protected readonly List<IGraphNode<T>> neighbors = new List<IGraphNode<T>>(10);
+        protected readonly List<IGraphNode<T>> neighbors = new(10);
 
         public bool Marked = false;
 
@@ -49,9 +49,9 @@ namespace PathfindingTutorial.Data_Structures
         public IGraphNode<T> Clone()
         {
             var cln = new GraphNode<T>(value);
-
             return cln;
         }
 
+        public int GetDegree() => neighbors.Count;
     }
 }

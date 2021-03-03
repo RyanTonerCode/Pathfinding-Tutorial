@@ -93,7 +93,7 @@ namespace PathfindingTutorial.Data_Structures
                 pruferCount[num-1]++;
             }
 
-            GraphNode<int> prufer_node = new GraphNode<int>(0);
+            var prufer_node = new GraphNode<int>(0);
 
             for(int prufer_index = 0; prufer_index < prufer.Length; prufer_index++) {
                 for(int i = 1; i <= n; i++)
@@ -142,6 +142,83 @@ namespace PathfindingTutorial.Data_Structures
 
             return adjacencyMatrix;
         }
+
+        public static Graph<int> GenerateGraphForAdjacencyMatrix(int[,] adjacencyMatrix)
+        {
+            int length = adjacencyMatrix.GetLength(0);
+
+            var G = new Graph<int>();
+
+            for (int i = 0; i < length; i++)
+                G.AddNode(new GraphNode<int>(i));
+
+            for (int i = 0; i < length; i++)
+                for (int j = 0; j < length; j++)
+                    if (adjacencyMatrix[i, j] != 0)
+                        G.graphStructure[i].AddNeighbor(G.graphStructure[j]);
+
+            return G;
+        }
+
+        private class DegreeSequenceData
+        {
+            public GraphNode<int> Vertex { get; private set; }
+            public int DegreeValue { get; set; }
+
+            public DegreeSequenceData(GraphNode<int> Vertex, int DegreeValue)
+            {
+                this.Vertex = Vertex;
+                this.DegreeValue = DegreeValue;
+            }
+        }
+
+        public static Graph<int> GenerateGraphForDegreeSequence(int[] degreeSequence)
+        {
+            var degreeSequenceList = new List<DegreeSequenceData>(degreeSequence.Length);
+
+            var G = new Graph<int>();
+            for (int i = 0; i < degreeSequence.Length; i++)
+            {
+                var node = new GraphNode<int>(i);
+                degreeSequenceList.Add(new DegreeSequenceData(node, degreeSequence[i]));
+                G.AddNode(node);
+            }
+
+            while (true)
+            {
+                //sort the degree sequence from greatest to least degree value
+                //if multiple have the same degree value, pick the smaller vertex
+                degreeSequenceList.Sort((x, y) => x == y ? x.Vertex.GetValue().CompareTo(y.Vertex.GetValue()) : y.DegreeValue.CompareTo(x.DegreeValue));
+
+                var maxDegreeData = degreeSequenceList[0];
+
+                //get the maximum degree vertex
+                int maxDegree = maxDegreeData.DegreeValue;
+
+                //if the maximum degree vertex is 0, we can terminate the algorithm
+                if (maxDegree == 0)
+                    return G;
+
+                //assign its degree to 0, as we will assign edges to use up all its degrees
+                degreeSequenceList[0].DegreeValue = 0;
+
+                //not enough nodes remain to add neighbors to
+                if(maxDegree >= degreeSequence.Length)
+                    return null;
+
+                //assign a connected to the next maxDegree vertices, and decrement each degree value by 1
+                for (int i = 1; i <= maxDegree; i++)
+                {
+                    degreeSequenceList[i].DegreeValue--;
+                    //the neighbor node cannot be assigned, and therefore this degree sequence is not possible
+                    if (degreeSequenceList[i].DegreeValue < 0)
+                        return null;
+                    //assign the vertex to each neighbor
+                    IGraphNode<int>.AddMutualNeighbor(maxDegreeData.Vertex, degreeSequenceList[i].Vertex);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Returns a list of all edges sorted in order by weight
@@ -195,6 +272,18 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             return edges;
+        }
+
+        public List<int> GetDegreeSequence()
+        {
+            var degreeSequence = new List<int>(graphStructure.Count);
+
+            foreach (var node in graphStructure)
+                degreeSequence.Add(node.GetDegree());
+
+            degreeSequence.Sort((x, y) => y.CompareTo(x));
+
+            return degreeSequence;
         }
 
         /// <summary>
@@ -571,7 +660,7 @@ namespace PathfindingTutorial.Data_Structures
             //obtain sorted edge list for G
             var sortedEdgeList = GetEdgeListUndirected();
 
-            Graph<T> MSF = new Graph<T>();
+           var MSF = new Graph<T>();
 
             foreach (var edge in sortedEdgeList)
             {

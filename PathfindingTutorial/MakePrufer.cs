@@ -6,28 +6,28 @@ namespace PathfindingTutorial
 {
     public partial class Program
     {
+        static void PrintPruferSequence(int[] prufer)
+        {
+            for (int i = 0; i < prufer.Length; i++)
+            {
+                Console.Write(prufer[i]);
+                if (i < prufer.Length - 1)
+                    Console.Write(",");
+            }
+
+            Console.WriteLine();
+        }
+
         private static void PruferToTree()
         {
             var prufer1 = new int[] { 5, 2, 1, 6, 4, 7 };
             var prufer2 = new int[] { 5, 2, 4, 1, 2, 5 };
 
-            List<int[]> pruferCodes = new List<int[]>()
+            var pruferCodes = new List<int[]>()
             {
                 prufer1,
                 prufer2
             };
-
-            void PrintPruferSequence(int[] prufer)
-            {
-                for (int i = 0; i < prufer.Length; i++)
-                {
-                    Console.Write(prufer[i]);
-                    if (i < prufer.Length - 1)
-                        Console.Write(",");
-                }
-
-                Console.WriteLine();
-            }
 
             foreach(var prufer in pruferCodes)
             {

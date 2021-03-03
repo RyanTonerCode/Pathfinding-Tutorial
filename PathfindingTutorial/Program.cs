@@ -19,13 +19,14 @@ namespace PathfindingTutorial
             MIN_SPANNING_TREE_PRIM, 
             MIN_SPANNING_TREE_KRUSKAL,
             FIND_COMPONENTS,
-            PRUFER_TO_TREE
+            PRUFER_TO_TREE,
+            DEGREE_SEQUENCE_CONSTRUCTOR
         };
 
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.PRUFER_TO_TREE;
+            SUBPROGRAM sp = SUBPROGRAM.DEGREE_SEQUENCE_CONSTRUCTOR;
 
             switch (sp)
             {
@@ -45,7 +46,7 @@ namespace PathfindingTutorial
                     SolvePuzzle(false, true);
                     break;
                 case SUBPROGRAM.SOLVE_MANY_PUZZLES:
-                    Stopwatch sw = new Stopwatch();
+                    var sw = new Stopwatch();
 
                     sw.Start();
 
@@ -71,6 +72,9 @@ namespace PathfindingTutorial
                     break;
                 case SUBPROGRAM.PRUFER_TO_TREE:
                     PruferToTree();
+                    break;
+                case SUBPROGRAM.DEGREE_SEQUENCE_CONSTRUCTOR:
+                    MakeDegreeSequence();
                     break;
             }
 
