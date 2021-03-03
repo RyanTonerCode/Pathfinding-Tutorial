@@ -6,12 +6,12 @@ namespace PathfindingTutorial
 {
     public partial class Program
     {
-        static void PrintPruferSequence(int[] prufer)
+        static void PrintArray(int[] array)
         {
-            for (int i = 0; i < prufer.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
-                Console.Write(prufer[i]);
-                if (i < prufer.Length - 1)
+                Console.Write(array[i]);
+                if (i < array.Length - 1)
                     Console.Write(",");
             }
 
@@ -31,7 +31,7 @@ namespace PathfindingTutorial
 
             foreach(var prufer in pruferCodes)
             {
-                PrintPruferSequence(prufer);
+                PrintArray(prufer);
 
                 var tree = Graph<int>.PruferEncodingToTree(prufer);
 
@@ -43,7 +43,7 @@ namespace PathfindingTutorial
                 int tally = 0;
 
                 Console.WriteLine("PRUFER CODE OF TREE");
-                PrintPruferSequence(reversePrufer.ToArray());
+                PrintArray(reversePrufer.ToArray());
 
                 Console.WriteLine("COMPARING PRUFER SEQUENCES");
 

@@ -6,7 +6,7 @@ namespace PathfindingTutorial.Data_Structures
 {
     public class Graph<T> : IGraph<T>
     {
-        private readonly List<IGraphNode<T>> graphStructure = new List<IGraphNode<T>>();
+        private readonly List<IGraphNode<T>> graphStructure = new();
 
         public Graph<T> Clone()
         {
@@ -27,6 +27,7 @@ namespace PathfindingTutorial.Data_Structures
             return H;
         }
 
+        #region Prufer Encoding
         /// <summary>
         /// Create a prufer encoding for a tree
         /// The tree should have nodes with values labelled 1...n
@@ -120,7 +121,9 @@ namespace PathfindingTutorial.Data_Structures
 
             return G;
         }
+        #endregion
 
+        #region Adjacency Matrix
         public int[,] GetAdjacencyMatrix()
         {
             //initialize the adjacency matrix
@@ -159,6 +162,24 @@ namespace PathfindingTutorial.Data_Structures
 
             return G;
         }
+        #endregion
+
+        #region Degree Sequence
+        /// <summary>
+        /// Obtain a sorted degree sequence for the graph from greatest to least
+        /// </summary>
+        /// <returns></returns>
+        public List<int> GetDegreeSequence()
+        {
+            var degreeSequence = new List<int>(graphStructure.Count);
+
+            foreach (var node in graphStructure)
+                degreeSequence.Add(node.GetDegree());
+
+            degreeSequence.Sort((x, y) => y.CompareTo(x));
+
+            return degreeSequence;
+        }
 
         private class DegreeSequenceData
         {
@@ -172,6 +193,24 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
+        /// <summary>
+        /// Creates a complete graph
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static Graph<int> GenerateCompleteGraph(int n)
+        {
+            int[] degreeSequence = new int[n];
+            for (int i = 0; i < n; i++)
+                degreeSequence[i] = n-1;
+            return GenerateGraphForDegreeSequence(degreeSequence);
+        }
+
+        /// <summary>
+        /// Generate a graph that matches the given degree sequence. Returns null if unable to actualize.
+        /// </summary>
+        /// <param name="degreeSequence"></param>
+        /// <returns></returns>
         public static Graph<int> GenerateGraphForDegreeSequence(int[] degreeSequence)
         {
             var degreeSequenceList = new List<DegreeSequenceData>(degreeSequence.Length);
@@ -218,8 +257,9 @@ namespace PathfindingTutorial.Data_Structures
                 }
             }
         }
+        #endregion
 
-
+        #region Edge Lists
         /// <summary>
         /// Returns a list of all edges sorted in order by weight
         /// </summary>
@@ -273,18 +313,7 @@ namespace PathfindingTutorial.Data_Structures
 
             return edges;
         }
-
-        public List<int> GetDegreeSequence()
-        {
-            var degreeSequence = new List<int>(graphStructure.Count);
-
-            foreach (var node in graphStructure)
-                degreeSequence.Add(node.GetDegree());
-
-            degreeSequence.Sort((x, y) => y.CompareTo(x));
-
-            return degreeSequence;
-        }
+        #endregion
 
         /// <summary>
         /// The number of nodes processed by the last search performed on this graph.
@@ -785,7 +814,7 @@ namespace PathfindingTutorial.Data_Structures
                     sb.Append(adjacencyMatrix[i,j] + " ");
                 sb.AppendLine();
             }
-            Console.WriteLine(sb);
+            Console.Write(sb);
         }
 
         public void PrintNodes()

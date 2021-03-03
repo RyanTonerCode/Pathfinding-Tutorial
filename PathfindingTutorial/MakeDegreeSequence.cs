@@ -6,18 +6,6 @@ namespace PathfindingTutorial
 {
     public partial class Program
     {
-        static void PrintDegreeSequence(int[] prufer)
-        {
-            for (int i = 0; i < prufer.Length; i++)
-            {
-                Console.Write(prufer[i]);
-                if (i < prufer.Length - 1)
-                    Console.Write(",");
-            }
-
-            Console.WriteLine();
-        }
-
         private static void MakeDegreeSequence()
         {
             int[] seq1 = { 7, 6, 6, 5, 4, 3, 2, 1 };
@@ -31,18 +19,22 @@ namespace PathfindingTutorial
 
             foreach (var seq in degreeSequences)
             {
-                PrintDegreeSequence(seq);
+                PrintArray(seq);
                 var graph = Graph<int>.GenerateGraphForDegreeSequence(seq);
                 if(graph == null)
                 {
-                    Console.WriteLine("Unable to make degree sequence");
+                    Console.WriteLine(":( Unable to construct a graph with this degree sequence");
                 }
                 else
                 {
+                    Console.WriteLine();
                     graph.PrintAdjacencyMatrix();
+                    Console.WriteLine();
+                    var checkSeq = graph.GetDegreeSequence();
+                    PrintArray(checkSeq.ToArray());
                 }
+                Console.WriteLine();
             }
-
         }
     }
 }
