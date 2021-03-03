@@ -6,7 +6,7 @@ namespace PathfindingTutorial.Data_Structures
 {
     public class Graph<T> : IGraph<T>
     {
-        private readonly List<IGraphNode<T>> graphStructure = new();
+        protected readonly List<IGraphNode<T>> graphStructure = new();
 
         public Graph<T> Clone()
         {
@@ -26,102 +26,6 @@ namespace PathfindingTutorial.Data_Structures
 
             return H;
         }
-
-        #region Prufer Encoding
-        /// <summary>
-        /// Create a prufer encoding for a tree
-        /// The tree should have nodes with values labelled 1...n
-        /// </summary>
-        /// <param name="tree"></param>
-        /// <returns>Prufer encoding as a list</returns>
-        public static List<int> GeneratePruferEncodingForTree(Graph<int> tree)
-        {
-            var prufer = new List<int>(tree.graphStructure.Count - 2);
-
-            //clone the tree for needed modifications
-            var tree_copy = tree.Clone();
-
-            while(tree_copy.graphStructure.Count > 2)
-            {
-                //find node with smallest label that has degree 1
-                for (int i = 0; i < tree_copy.graphStructure.Count; i++)
-                {
-                    var node = tree_copy.graphStructure[i];
-                    var neighborList = node.GetNeighbors();
-                    if (neighborList.Count == 1)
-                    {
-                        var onlyNeighbor = neighborList[0];
-                        //remove the leaf node from the neighbor's list
-                        onlyNeighbor.RemoveNeighbor(node);
-                        //add the value of the leaf's only neighbor to the prufer sequence
-                        prufer.Add(onlyNeighbor.GetValue());
-                        //remove the leaf node from the graph structure
-                        tree_copy.graphStructure.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-
-            return prufer;
-        }
-
-        /// <summary>
-        /// Creates a tree that has the given prufer encoding
-        /// </summary>
-        /// <param name="prufer"></param>
-        /// <returns></returns>
-        public static Graph<int> PruferEncodingToTree(int[] prufer)
-        {
-            var G = new Graph<int>();
-
-            var labeling = new Dictionary<int, GraphNode<int>>();
-
-            int n = 2 + prufer.Length;
-
-            for (int i = 1; i <= n; i++)
-            {
-                var node = new GraphNode<int>(i);
-                labeling.Add(i, node);
-                G.AddNode(node);
-            }
-
-            //count the number of times a label appears in the encoding
-            var pruferCount = new int[n];
-
-            foreach (var num in prufer)
-            {
-                //increase the number of times this label appears
-                pruferCount[num-1]++;
-            }
-
-            var prufer_node = new GraphNode<int>(0);
-
-            for(int prufer_index = 0; prufer_index < prufer.Length; prufer_index++) {
-                for(int i = 1; i <= n; i++)
-                {
-                    if (pruferCount[i-1] == 0)
-                    {
-                        var leaf_node = labeling[i];
-                        var neighbor_index = prufer[prufer_index];
-                        prufer_node = labeling[neighbor_index];
-                        IGraphNode<int>.AddMutualNeighbor(leaf_node, prufer_node);
-
-                        //assigned prufer for the current label
-                        pruferCount[i-1] = -1;
-                        //decrement prufer count for neighbor label
-                        pruferCount[neighbor_index-1]--;
-
-                        break;
-                    }
-                }
-            }
-
-            //assign the last vertex to the last prufer node
-            IGraphNode<int>.AddMutualNeighbor(prufer_node, labeling[n]);
-
-            return G;
-        }
-        #endregion
 
         #region Adjacency Matrix
         public int[,] GetAdjacencyMatrix()
@@ -839,5 +743,8 @@ namespace PathfindingTutorial.Data_Structures
                 Console.WriteLine(edge);
         }
 
+        public int GetOrder() => graphStructure.Count;
+
+        public int GetSize() => GetEdgeListUndirected().Count;
     }
 }

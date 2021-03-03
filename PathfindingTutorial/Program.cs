@@ -26,7 +26,7 @@ namespace PathfindingTutorial
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.DEGREE_SEQUENCE_CONSTRUCTOR;
+            SUBPROGRAM sp = SUBPROGRAM.PRUFER_TO_TREE;
 
             switch (sp)
             {

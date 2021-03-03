@@ -33,12 +33,12 @@ namespace PathfindingTutorial
             {
                 PrintArray(prufer);
 
-                var tree = Graph<int>.PruferEncodingToTree(prufer);
+                var tree = Tree<int>.PruferEncodingToTree(prufer);
 
                 Console.WriteLine("TREE WITH PRUFER CODE");
                 tree.PrintEdgesUndirected();
 
-                var reversePrufer = Graph<int>.GeneratePruferEncodingForTree(tree);
+                var reversePrufer = Tree<int>.GeneratePruferEncodingForTree(tree);
 
                 int tally = 0;
 

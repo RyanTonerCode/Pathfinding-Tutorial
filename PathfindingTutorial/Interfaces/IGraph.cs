@@ -8,5 +8,9 @@ namespace PathfindingTutorial.Data_Structures
 
         public void RemoveNode(IGraphNode<T> Node);
 
+        public int GetOrder();
+
+        public int GetSize();
+
     }
 }
