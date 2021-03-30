@@ -8,6 +8,10 @@ namespace PathfindingTutorial.Data_Structures
     {
         protected readonly List<IGraphNode<T>> graphStructure = new();
 
+        public int TotalVertices { get; private set; }
+        public int TotalEdges { get; private set; }
+
+
         public Graph<T> Clone()
         {
             var H = new Graph<T>();
@@ -23,6 +27,8 @@ namespace PathfindingTutorial.Data_Structures
             foreach (var node in graphStructure)
                 foreach (var neighbor in node.GetNeighbors())
                     clones[node].AddNeighbor(clones[neighbor]);
+
+            H.TotalEdges = TotalEdges;
 
             return H;
         }
@@ -50,7 +56,7 @@ namespace PathfindingTutorial.Data_Structures
             return adjacencyMatrix;
         }
 
-        public static Graph<int> GenerateGraphForAdjacencyMatrix(int[,] adjacencyMatrix)
+        public static Graph<int> GenerateGraphForAdjacencyMatrix(int[,] adjacencyMatrix, bool undirected = false)
         {
             int length = adjacencyMatrix.GetLength(0);
 
@@ -62,7 +68,13 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < length; i++)
                 for (int j = 0; j < length; j++)
                     if (adjacencyMatrix[i, j] != 0)
-                        G.graphStructure[i].AddNeighbor(G.graphStructure[j]);
+                    {
+                        G.TotalEdges++;
+                        if (undirected)
+                            IGraphNode<int>.AddMutualNeighbor(G.graphStructure[i], G.graphStructure[j]);
+                        else
+                            G.graphStructure[i].AddNeighbor(G.graphStructure[j]);
+                    }
 
             return G;
         }
@@ -94,6 +106,61 @@ namespace PathfindingTutorial.Data_Structures
             {
                 this.Vertex = Vertex;
                 this.DegreeValue = DegreeValue;
+            }
+        }
+
+        private List<ReferentialDegreeSequenceData> GetReferentialDegreeSequence()
+        {
+            var degreeSequenceDict = new Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData>(graphStructure.Count);
+            var degreeSequenceList = new List<ReferentialDegreeSequenceData>();
+
+            foreach (var node in graphStructure)
+            {
+                var data = new ReferentialDegreeSequenceData(node, node.GetDegree());
+                degreeSequenceList.Add(data);
+                degreeSequenceDict.Add(node, data);
+            }
+
+            foreach (var node in graphStructure)
+                foreach(var neighbor in node.GetNeighbors())
+                    degreeSequenceDict[node].Connections.Add(neighbor, degreeSequenceDict[neighbor]);
+
+
+            degreeSequenceList.Sort((x, y) => y.DegreeValue.CompareTo(x.DegreeValue));
+
+            return degreeSequenceList;
+        }
+
+        private class ReferentialDegreeSequenceData
+        {
+            public IGraphNode<T> Vertex { get; private set; }
+            public int DegreeValue { get; set; }
+            public Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData> Connections {get; private set;}
+
+            public ReferentialDegreeSequenceData(IGraphNode<T> Vertex, int DegreeValue)
+            {
+                this.Vertex = Vertex;
+                this.DegreeValue = DegreeValue;
+                Connections = new Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData>();
+            }
+
+            public ReferentialDegreeSequenceData RemoveEdge(ReferentialDegreeSequenceData other)
+            {
+                var clone = Clone();
+                var other_clone = other.Clone();
+                clone.DegreeValue--;
+                other_clone.DegreeValue--;
+                clone.Connections.Remove(other.Vertex);
+                other_clone.Connections.Remove(Vertex);
+                return clone;
+            }
+
+            public ReferentialDegreeSequenceData Clone()
+            {
+                var clone = new ReferentialDegreeSequenceData(Vertex, DegreeValue);
+                foreach (var (key, value) in Connections)
+                    clone.Connections.Add(key, value);
+                return clone;
             }
         }
 
@@ -244,11 +311,13 @@ namespace PathfindingTutorial.Data_Structures
         public void AddNode(IGraphNode<T> Node)
         {
             graphStructure.Add(Node);
+            TotalVertices++;
         }
 
         public void RemoveNode(IGraphNode<T> Node)
         {
             graphStructure.Remove(Node);
+            TotalVertices--;
         }
 
         public NodePath<T> RunDFS(IGraphNode<T> Start, IGraphNode<T> End)
@@ -700,6 +769,96 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             return components;
+        }
+
+        public bool IsValidMinor(Graph<int> checkMinor)
+        {
+            if (checkMinor.TotalVertices > TotalVertices || checkMinor.TotalEdges > TotalEdges)
+                return false;
+
+            //clone the minor
+            var minorClone = checkMinor.Clone();
+
+
+            //First, add as many vertices as needed...
+            int vertexDifference = TotalVertices - minorClone.TotalVertices;
+
+            for (int i = 0; i < vertexDifference; i++)
+            {
+                int label = minorClone.TotalVertices + i;
+                Console.WriteLine("Created Vertex {0}", label);
+                minorClone.AddNode(new GraphNode<int>(label));
+            }
+
+            var adjacencyMatrixOriginal = GetAdjacencyMatrix();
+
+            var totalNeighborsOriginal = new int[TotalVertices];
+            for (int i = 0; i < TotalVertices; i++)
+                for (int j = 0; j < TotalVertices; j++)
+                    if (adjacencyMatrixOriginal[i, j] == 1)
+                        totalNeighborsOriginal[i]++;
+
+            var degreeSeqMinor = minorClone.GetDegreeSequence();
+
+            Console.WriteLine(string.Join(",", degreeSeqMinor));
+
+
+            //var degreeSequenceOriginal = GetReferentialDegreeSequence();
+
+            //var degreeSequenceMinor = minorClone.GetReferentialDegreeSequence();
+
+            //figure out what edges to remove from the original to get to the minor
+
+            //first figure out how many edges we have to remove
+            int minorEdgeDifference = TotalEdges - minorClone.TotalEdges;
+
+            //queue references adjacency matrix to an int of the number of edges removes
+            var queue = new Queue<(int[,], int[], int)>();
+
+            queue.Enqueue((adjacencyMatrixOriginal, totalNeighborsOriginal, 0));
+
+            while (queue.Count > 0)
+            {
+                var (adjacencyMatrix, totalNeighbors, edgesRemoved) = queue.Dequeue();
+                if (edgesRemoved > minorEdgeDifference)
+                    continue;
+
+                //check the neighbor sums to eliminate impossible assignments
+                var sortedNeighbors = new List<int>(totalNeighbors);
+                sortedNeighbors.Sort((x, y) => y.CompareTo(x));
+
+                int equivalent = 0;
+                for (int i = 0; i < TotalVertices; i++)
+                    if (sortedNeighbors[i] < degreeSeqMinor[i])
+                        continue;
+                    else if (sortedNeighbors[i] == degreeSeqMinor[i])
+                        equivalent++;
+
+                if(equivalent == TotalVertices && edgesRemoved == minorEdgeDifference)
+                {
+                    Console.WriteLine("Finished");
+                    break;
+                }
+
+                //enqueue all possibilities of removing edges
+                for (int i = 0; i < TotalVertices; i++)
+                    for(int j = i + 1; j < TotalVertices; j++)
+                        //for every edge, try removing it
+                        if(adjacencyMatrix[i,j] == 1)
+                        {
+                            var newMatrix = (int[,])adjacencyMatrix.Clone();
+                            newMatrix[i, j] = 0;
+                            newMatrix[j, i] = 0;
+                            var newTotalNeighbors = (int[])totalNeighbors.Clone();
+                            newTotalNeighbors[i]--;
+                            newTotalNeighbors[j]--;
+                            queue.Enqueue((newMatrix, newTotalNeighbors, edgesRemoved+1));
+                        }
+                            
+                    
+            }
+
+            return true;
         }
 
         public void PrintAdjacencyMatrix()

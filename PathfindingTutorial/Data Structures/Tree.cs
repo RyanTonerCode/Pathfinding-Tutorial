@@ -77,7 +77,7 @@ namespace PathfindingTutorial.Data_Structures
         /// <returns></returns>
         public static Tree<int> PruferEncodingToTree(int[] prufer)
         {
-            var G = new Tree<int>();
+            var T = new Tree<int>();
 
             var labeling = new Dictionary<int, GraphNode<int>>();
 
@@ -87,7 +87,7 @@ namespace PathfindingTutorial.Data_Structures
             {
                 var node = new GraphNode<int>(i);
                 labeling.Add(i, node);
-                G.AddNode(node);
+                T.AddNode(node);
             }
 
             //count the number of times a label appears in the encoding
@@ -99,9 +99,9 @@ namespace PathfindingTutorial.Data_Structures
                 pruferCount[num-1]++;
             }
 
-            var prufer_node = new GraphNode<int>(0);
+            GraphNode<int> prufer_node = null;
 
-            for(int prufer_index = 0; prufer_index < prufer.Length; prufer_index++) {
+            for(int prufer_index = 0; prufer_index < prufer.Length; prufer_index++)
                 for(int i = 1; i <= n; i++)
                 {
                     if (pruferCount[i-1] == 0)
@@ -119,12 +119,12 @@ namespace PathfindingTutorial.Data_Structures
                         break;
                     }
                 }
-            }
 
             //assign the last vertex to the last prufer node
-            IGraphNode<int>.AddMutualNeighbor(prufer_node, labeling[n]);
+            if(prufer_node != null)
+                IGraphNode<int>.AddMutualNeighbor(prufer_node, labeling[n]);
 
-            return G;
+            return T;
         }
         #endregion
 

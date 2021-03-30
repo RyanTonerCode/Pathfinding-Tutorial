@@ -20,13 +20,14 @@ namespace PathfindingTutorial
             MIN_SPANNING_TREE_KRUSKAL,
             FIND_COMPONENTS,
             PRUFER_TO_TREE,
-            DEGREE_SEQUENCE_CONSTRUCTOR
+            DEGREE_SEQUENCE_CONSTRUCTOR,
+           IS_VALID_MINOR
         };
 
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.PRUFER_TO_TREE;
+            SUBPROGRAM sp = SUBPROGRAM.IS_VALID_MINOR;
 
             switch (sp)
             {
@@ -75,6 +76,9 @@ namespace PathfindingTutorial
                     break;
                 case SUBPROGRAM.DEGREE_SEQUENCE_CONSTRUCTOR:
                     MakeDegreeSequence();
+                    break;
+                case SUBPROGRAM.IS_VALID_MINOR:
+                    IsValidMinor();
                     break;
             }
 
