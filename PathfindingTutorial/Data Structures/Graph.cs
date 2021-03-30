@@ -771,6 +771,24 @@ namespace PathfindingTutorial.Data_Structures
             return components;
         }
 
+        public class EdgeRemovalGraphSearch
+        {
+            public int[,] adjacencyMatrix;
+            public int[] totalNeighbors;
+            public int edgesRemoved;
+            public EdgeRemovalGraphSearch parent;
+            public Edge<T> edgeRemoved;
+
+            public EdgeRemovalGraphSearch(int[,] adjacencyMatrix, int[] totalNeighbors, int edgesRemoved, EdgeRemovalGraphSearch parent, Edge<T> edgeRemoved=null)
+            {
+                this.adjacencyMatrix = adjacencyMatrix;
+                this.totalNeighbors = totalNeighbors;
+                this.edgesRemoved = edgesRemoved;
+                this.parent = parent;
+                this.edgeRemoved = edgeRemoved;
+            }
+        }
+
         public bool IsValidMinor(Graph<int> checkMinor)
         {
             if (checkMinor.TotalVertices > TotalVertices || checkMinor.TotalEdges > TotalEdges)
@@ -812,19 +830,24 @@ namespace PathfindingTutorial.Data_Structures
             //first figure out how many edges we have to remove
             int minorEdgeDifference = TotalEdges - minorClone.TotalEdges;
 
-            //queue references adjacency matrix to an int of the number of edges removes
-            var queue = new Queue<(int[,], int[], int)>();
+     
 
-            queue.Enqueue((adjacencyMatrixOriginal, totalNeighborsOriginal, 0));
+            //queue references adjacency matrix to an int of the number of edges removes
+            var queue = new Queue<EdgeRemovalGraphSearch>();
+
+
+            var start = new EdgeRemovalGraphSearch(adjacencyMatrixOriginal, totalNeighborsOriginal, 0, null);
+
+            queue.Enqueue(start);
 
             while (queue.Count > 0)
             {
-                var (adjacencyMatrix, totalNeighbors, edgesRemoved) = queue.Dequeue();
-                if (edgesRemoved > minorEdgeDifference)
+                var front = queue.Dequeue();
+                if (front.edgesRemoved > minorEdgeDifference)
                     continue;
 
                 //check the neighbor sums to eliminate impossible assignments
-                var sortedNeighbors = new List<int>(totalNeighbors);
+                var sortedNeighbors = new List<int>(front.totalNeighbors);
                 sortedNeighbors.Sort((x, y) => y.CompareTo(x));
 
                 int equivalent = 0;
@@ -834,37 +857,60 @@ namespace PathfindingTutorial.Data_Structures
                     else if (sortedNeighbors[i] == degreeSeqMinor[i])
                         equivalent++;
 
-                if(equivalent == TotalVertices && edgesRemoved == minorEdgeDifference)
+                if(equivalent == TotalVertices && front.edgesRemoved == minorEdgeDifference)
                 {
-                    Console.WriteLine("Finished");
-                    break;
+                    Console.WriteLine("Graph is a valid minor");
+
+                    var stk = new Stack<EdgeRemovalGraphSearch>(minorEdgeDifference);
+
+                    var backtracking = front;
+                    while (backtracking != null)
+                    {
+                        stk.Push(backtracking);
+                        backtracking = backtracking.parent;
+                    }
+
+                    while(stk.Count > 0)
+                    {
+                        var top = stk.Pop();
+
+                        var edgeRemoved = top.edgeRemoved;
+                        if (edgeRemoved != null)
+                            Console.WriteLine("Removed Edge {0}\n", edgeRemoved);
+
+                        PrintAdjacencyMatrix(top.adjacencyMatrix);
+                        Console.WriteLine();
+                    }
+                    return true;
                 }
 
                 //enqueue all possibilities of removing edges
                 for (int i = 0; i < TotalVertices; i++)
                     for(int j = i + 1; j < TotalVertices; j++)
                         //for every edge, try removing it
-                        if(adjacencyMatrix[i,j] == 1)
+                        if(front.adjacencyMatrix[i,j] == 1)
                         {
-                            var newMatrix = (int[,])adjacencyMatrix.Clone();
+                            var newMatrix = (int[,])front.adjacencyMatrix.Clone();
                             newMatrix[i, j] = 0;
                             newMatrix[j, i] = 0;
-                            var newTotalNeighbors = (int[])totalNeighbors.Clone();
+                            var newTotalNeighbors = (int[])front.totalNeighbors.Clone();
                             newTotalNeighbors[i]--;
                             newTotalNeighbors[j]--;
-                            queue.Enqueue((newMatrix, newTotalNeighbors, edgesRemoved+1));
+                            var edgeRemoved = new Edge<T>(graphStructure[i], graphStructure[j]);
+                            queue.Enqueue(new EdgeRemovalGraphSearch(newMatrix, newTotalNeighbors, front.edgesRemoved + 1, front, edgeRemoved));
                         }
                             
                     
             }
 
-            return true;
+            //graph is not a valid minor
+            return false;
         }
 
-        public void PrintAdjacencyMatrix()
+        public void PrintAdjacencyMatrix(int[,] provided_adjMatrix = null)
         {
             var sb = new StringBuilder("   ");
-            var adjacencyMatrix = GetAdjacencyMatrix();
+            var adjacencyMatrix = provided_adjMatrix == null ? GetAdjacencyMatrix() : provided_adjMatrix;
 
             for (int i = 0; i < graphStructure.Count; i++)
                 sb.Append(graphStructure[i].GetValue() + " ");
