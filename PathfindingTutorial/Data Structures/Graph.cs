@@ -109,61 +109,6 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
-        private List<ReferentialDegreeSequenceData> GetReferentialDegreeSequence()
-        {
-            var degreeSequenceDict = new Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData>(graphStructure.Count);
-            var degreeSequenceList = new List<ReferentialDegreeSequenceData>();
-
-            foreach (var node in graphStructure)
-            {
-                var data = new ReferentialDegreeSequenceData(node, node.GetDegree());
-                degreeSequenceList.Add(data);
-                degreeSequenceDict.Add(node, data);
-            }
-
-            foreach (var node in graphStructure)
-                foreach(var neighbor in node.GetNeighbors())
-                    degreeSequenceDict[node].Connections.Add(neighbor, degreeSequenceDict[neighbor]);
-
-
-            degreeSequenceList.Sort((x, y) => y.DegreeValue.CompareTo(x.DegreeValue));
-
-            return degreeSequenceList;
-        }
-
-        private class ReferentialDegreeSequenceData
-        {
-            public IGraphNode<T> Vertex { get; private set; }
-            public int DegreeValue { get; set; }
-            public Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData> Connections {get; private set;}
-
-            public ReferentialDegreeSequenceData(IGraphNode<T> Vertex, int DegreeValue)
-            {
-                this.Vertex = Vertex;
-                this.DegreeValue = DegreeValue;
-                Connections = new Dictionary<IGraphNode<T>, ReferentialDegreeSequenceData>();
-            }
-
-            public ReferentialDegreeSequenceData RemoveEdge(ReferentialDegreeSequenceData other)
-            {
-                var clone = Clone();
-                var other_clone = other.Clone();
-                clone.DegreeValue--;
-                other_clone.DegreeValue--;
-                clone.Connections.Remove(other.Vertex);
-                other_clone.Connections.Remove(Vertex);
-                return clone;
-            }
-
-            public ReferentialDegreeSequenceData Clone()
-            {
-                var clone = new ReferentialDegreeSequenceData(Vertex, DegreeValue);
-                foreach (var (key, value) in Connections)
-                    clone.Connections.Add(key, value);
-                return clone;
-            }
-        }
-
         /// <summary>
         /// Creates a complete graph
         /// </summary>
@@ -806,61 +751,102 @@ namespace PathfindingTutorial.Data_Structures
                 int label = minorClone.TotalVertices + i;
                 Console.WriteLine("Created Vertex {0}", label);
                 minorClone.AddNode(new GraphNode<int>(label));
+            }            
+
+            //Get adjacency matrices for both graphs
+            var adjacencyMatrixOriginal = GetAdjacencyMatrix();
+            var adjMatrixMinor = minorClone.GetAdjacencyMatrix();
+
+            Console.WriteLine("\n***Adjacency Matrix of Original***\n");
+            PrintAdjacencyMatrix(adjacencyMatrixOriginal);
+            Console.WriteLine("\n*******************************\n");
+
+            Console.WriteLine("\n***Adjacency Matrix of Possible Minor***\n");
+            PrintAdjacencyMatrix(adjMatrixMinor);
+            Console.WriteLine("\n*******************************\n");
+
+            //Generate a degree set for the original graph
+            var degreeSetOriginal = new int[TotalVertices];
+            for (int i = 0; i < TotalVertices; i++)
+                degreeSetOriginal[i] = graphStructure[i].GetDegree();
+
+            //map each possible degree in the minor to a list of vertices
+            var degreeSetMinor = new Dictionary<int,List<int>>();
+            for (int i = 0; i < TotalVertices; i++) {
+                var degree = minorClone.graphStructure[i].GetDegree();
+                if (degreeSetMinor.ContainsKey(degree))
+                    degreeSetMinor[degree].Add(i);
+                else
+                    degreeSetMinor.Add(degree, new List<int>() { i });
             }
 
-            var adjacencyMatrixOriginal = GetAdjacencyMatrix();
+            var degreeSeqOriginal = GetDegreeSequence();
 
-            var totalNeighborsOriginal = new int[TotalVertices];
-            for (int i = 0; i < TotalVertices; i++)
-                for (int j = 0; j < TotalVertices; j++)
-                    if (adjacencyMatrixOriginal[i, j] == 1)
-                        totalNeighborsOriginal[i]++;
-
+            //Get the degree sequence of the minor
             var degreeSeqMinor = minorClone.GetDegreeSequence();
 
-            Console.WriteLine(string.Join(",", degreeSeqMinor));
+            Console.WriteLine("Degree Sequence of the Original: " + string.Join(",", degreeSeqOriginal));
+            Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqMinor));
+            Console.WriteLine();
 
-
-            //var degreeSequenceOriginal = GetReferentialDegreeSequence();
-
-            //var degreeSequenceMinor = minorClone.GetReferentialDegreeSequence();
-
-            //figure out what edges to remove from the original to get to the minor
-
-            //first figure out how many edges we have to remove
+            //Figure out how many edges we have to remove from the original
             int minorEdgeDifference = TotalEdges - minorClone.TotalEdges;
-
-     
 
             //queue references adjacency matrix to an int of the number of edges removes
             var queue = new Queue<EdgeRemovalGraphSearch>();
 
-
-            var start = new EdgeRemovalGraphSearch(adjacencyMatrixOriginal, totalNeighborsOriginal, 0, null);
+            var start = new EdgeRemovalGraphSearch(adjacencyMatrixOriginal, degreeSetOriginal, 0, null);
 
             queue.Enqueue(start);
 
+            int searchSpace = 0;
+
             while (queue.Count > 0)
             {
+                searchSpace++;
+
                 var front = queue.Dequeue();
-                if (front.edgesRemoved > minorEdgeDifference)
-                    continue;
 
                 //check the neighbor sums to eliminate impossible assignments
                 var sortedNeighbors = new List<int>(front.totalNeighbors);
                 sortedNeighbors.Sort((x, y) => y.CompareTo(x));
 
-                int equivalent = 0;
+                int degreesEquivalent = 0;
                 for (int i = 0; i < TotalVertices; i++)
-                    if (sortedNeighbors[i] < degreeSeqMinor[i])
+                    //if we have a degree in sequence with lower value than the minor, this graph cannot be isomorphic to the minor
+                    if (sortedNeighbors[i] < degreeSeqMinor[i]) 
                         continue;
+                    //otherwise count the number of degrees that are equivalent
                     else if (sortedNeighbors[i] == degreeSeqMinor[i])
-                        equivalent++;
+                        degreesEquivalent++;
 
-                if(equivalent == TotalVertices && front.edgesRemoved == minorEdgeDifference)
+                if(degreesEquivalent == TotalVertices && front.edgesRemoved == minorEdgeDifference)
                 {
-                    Console.WriteLine("Graph is a valid minor");
+                    //the graphs have the same degree sequence, so try for an isomorphism now...
 
+                    Console.WriteLine("Found a minor with same degree sequence... Checking for isomorphism with the given minor now");
+
+                    var mapMinorMatrixToCandidateIsom = new Dictionary<int, int>();
+
+                    //M = PNP^T
+                    for (int i = 0; i < TotalVertices; i++)
+                    {
+                        int degreeForThisRow = front.totalNeighbors[i];
+                        if (degreeSetMinor[degreeForThisRow].Count == 1)
+                        {
+                            var vertexInMinor = degreeSetMinor[degreeForThisRow][0];
+                            //map these nodes
+                            mapMinorMatrixToCandidateIsom[vertexInMinor] = i;
+                            Console.WriteLine("Mapping Minor Vertex {0} to Candidate Vertex {1} due to unique degree {2}", vertexInMinor, i, degreeForThisRow);
+                        }
+                        else
+                        {
+                            //need to permute here....
+                        }
+                    }
+
+
+                    //(assuming they are equivalent for now)...
                     var stk = new Stack<EdgeRemovalGraphSearch>(minorEdgeDifference);
 
                     var backtracking = front;
@@ -876,13 +862,18 @@ namespace PathfindingTutorial.Data_Structures
 
                         var edgeRemoved = top.edgeRemoved;
                         if (edgeRemoved != null)
-                            Console.WriteLine("Removed Edge {0}\n", edgeRemoved);
+                            Console.WriteLine("Remove Edge {0}\n", edgeRemoved);
 
                         PrintAdjacencyMatrix(top.adjacencyMatrix);
                         Console.WriteLine();
                     }
-                    return true;
+
+                    //return true;
                 }
+
+                //do not spawn more minors if the edge difference is already met
+                if (front.edgesRemoved == minorEdgeDifference)
+                    continue;
 
                 //enqueue all possibilities of removing edges
                 for (int i = 0; i < TotalVertices; i++)
@@ -903,6 +894,8 @@ namespace PathfindingTutorial.Data_Structures
                     
             }
 
+            Console.WriteLine(searchSpace);
+
             //graph is not a valid minor
             return false;
         }
@@ -912,14 +905,16 @@ namespace PathfindingTutorial.Data_Structures
             var sb = new StringBuilder("   ");
             var adjacencyMatrix = provided_adjMatrix == null ? GetAdjacencyMatrix() : provided_adjMatrix;
 
-            for (int i = 0; i < graphStructure.Count; i++)
+            var totalVertices = adjacencyMatrix.GetLength(0);
+
+            for (int i = 0; i < totalVertices; i++)
                 sb.Append(graphStructure[i].GetValue() + " ");
 
             sb.AppendLine();
-            for (int i = 0; i < graphStructure.Count; i++)
+            for (int i = 0; i < totalVertices; i++)
             {
                 sb.Append(graphStructure[i].GetValue() + ": ");
-                for (int j = 0; j < graphStructure.Count; j++)
+                for (int j = 0; j < totalVertices; j++)
                     sb.Append(adjacencyMatrix[i,j] + " ");
                 sb.AppendLine();
             }
