@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="MatrixMath">
+      <HintPath>..\..\MatrixMath\MatrixMath\bin\Debug\net5.0\MatrixMath.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

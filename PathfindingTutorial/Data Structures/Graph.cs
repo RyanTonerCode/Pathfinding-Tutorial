@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MatrixMath;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -734,6 +735,52 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
+        // Generating permutation using Heap Algorithm
+        static void heapPermutations(int[] a, int size, int n, ref List<int[]> permutations)
+        {
+            var stk = new Stack<(int[] a, int size, int n)>();
+
+            stk.Add((a, size, n));
+
+            while (stk.Count > 0)
+            {
+                var (a1, size1, n1) = stk.Pop();
+
+                if (size1 == 1)
+                {
+                    permutations.Add(a1);
+                    continue;
+                }
+
+                for (int i = 0; i < size1; i++)
+                {
+                    stk.Add((a1, size1 - 1, n1));
+
+                    a1 = (int[])a1.Clone();
+
+                    // if size is odd, swap 0th i.e (first) and
+                    // (size-1)th i.e (last) element
+                    if (size1 % 2 == 1)
+                    {
+                        int temp = a1[0];
+                        a1[0] = a1[size1 - 1];
+                        a1[size1 - 1] = temp;
+                    }
+
+                    // If size is even, swap ith and
+                    // (size-1)th i.e (last) element
+                    else
+                    {
+                        int temp = a1[i];
+                        a1[i] = a1[size1 - 1];
+                        a1[size1 - 1] = temp;
+                    }
+                }
+
+            }
+        }
+
+
         public bool IsValidMinor(Graph<int> checkMinor)
         {
             if (checkMinor.TotalVertices > TotalVertices || checkMinor.TotalEdges > TotalEdges)
@@ -800,6 +847,9 @@ namespace PathfindingTutorial.Data_Structures
             queue.Enqueue(start);
 
             int searchSpace = 0;
+            int possibilities_by_degree_seq = 0;
+
+            var originalAdjacency = new Matrix(adjacencyMatrixOriginal);
 
             while (queue.Count > 0)
             {
@@ -828,6 +878,12 @@ namespace PathfindingTutorial.Data_Structures
 
                     var mapMinorMatrixToCandidateIsom = new Dictionary<int, int>();
 
+                    possibilities_by_degree_seq++;
+
+                    int[] permuteList = new int[TotalVertices];
+                    int[] permuteVertices = new int[TotalVertices];
+                    int totalToPermute = 0;
+
                     //M = PNP^T
                     for (int i = 0; i < TotalVertices; i++)
                     {
@@ -841,10 +897,71 @@ namespace PathfindingTutorial.Data_Structures
                         }
                         else
                         {
+                            var first = degreeSetMinor[degreeForThisRow][0];
                             //need to permute here....
+                            permuteList[totalToPermute] = first;
+                            degreeSetMinor[degreeForThisRow].RemoveAt(0);
+                            degreeSetMinor[degreeForThisRow].Insert(degreeSetMinor[degreeForThisRow].Count, first);
+
+                            permuteVertices[totalToPermute] = i;
+                            totalToPermute++;
                         }
+
                     }
 
+                    var perms = new List<int[]>();
+
+                    heapPermutations(permuteVertices, totalToPermute, totalToPermute, ref perms);
+
+                    
+                    var N = new Matrix(front.adjacencyMatrix);
+
+                    bool isomorphic = false;
+
+                    foreach(var perm in perms)
+                    {
+                        var P = new Matrix(TotalVertices, TotalVertices);
+                        foreach(var kvp in mapMinorMatrixToCandidateIsom)
+                            P[kvp.Value, kvp.Key] = 1;
+
+                        for (int i = 0; i < totalToPermute; i++)
+                        {
+                            int key = permuteList[i];
+                            int value = perm[i];
+                            P[value, key] = 1;
+                        }
+
+                        P.Print();
+
+                        var inv = P.GetInverseMatrix();
+
+                        inv.Print();
+
+                        var result = P * N * inv;
+
+                        result.Print();
+
+                        if(result.Equals(originalAdjacency))
+                        {
+                            Console.WriteLine("EQUAL!");
+                            isomorphic = true;
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        Console.WriteLine(perm);
+
+
+                    }
+
+                    if (!isomorphic)
+                    {
+                        Console.WriteLine("non isom");
+                        continue;
+                    }
 
                     //(assuming they are equivalent for now)...
                     var stk = new Stack<EdgeRemovalGraphSearch>(minorEdgeDifference);
@@ -895,6 +1012,7 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             Console.WriteLine(searchSpace);
+            Console.WriteLine(possibilities_by_degree_seq);
 
             //graph is not a valid minor
             return false;
