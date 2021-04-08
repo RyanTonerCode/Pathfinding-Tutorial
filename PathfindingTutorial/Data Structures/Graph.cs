@@ -821,8 +821,8 @@ namespace PathfindingTutorial.Data_Structures
                     g2_degreeMap.Add(degree_g2, new List<int>() { i });
             }
 
-            //map vertices in g1 (keys) to possible matches in g2 for isomorphism (values)
-            var mapG1VerticesToG2Vertices = new Dictionary<int, List<int>>();
+            //map vertices in g1 (keys) to exact matches in g2 for isomorphism (because they have a unique degree)
+            var mapG1VerticesToG2Vertices = new Dictionary<int, int>();
 
 
             var permsFromG1ToG2 = new Dictionary<List<int>, List<int[]>>();
@@ -837,7 +837,7 @@ namespace PathfindingTutorial.Data_Structures
                     var g2_singleVertex = g2_degreeMap[degree][0];
 
                     //map these nodes
-                    mapG1VerticesToG2Vertices[g1_singleVertex] = new List<int>() { g2_singleVertex };
+                    mapG1VerticesToG2Vertices[g1_singleVertex] = g2_singleVertex;
                     Console.WriteLine("Mapping g1 Vertex {0} to g2 Vertex {1} due to unique degree {2}", g1_singleVertex, g2_singleVertex, degree);
                 }
                 else
@@ -845,7 +845,7 @@ namespace PathfindingTutorial.Data_Structures
                     //map nodes in g1 to list of nodes in g2 with the same degree
                     foreach (var g1_node in g1_node_list)
                     {
-                        mapG1VerticesToG2Vertices.Add(g1_node, g2_degreeMap[degree]);
+                        //mapG1VerticesToG2Vertices.Add(g1_node, g2_degreeMap[degree]);
                     }
                     var perms = new List<int[]>();
 
@@ -860,12 +860,17 @@ namespace PathfindingTutorial.Data_Structures
 
             int totalIndependentPermutations = permsFromG1ToG2.Count;
 
+
+            var permIndexer = new Dictionary<int, List<int>>();
+
             var permutationPicker = new List<int[]>();
 
             int perms_processed = 0;
             foreach(var key in permsFromG1ToG2.Keys)
             {
                 var permList = permsFromG1ToG2[key];
+
+                permIndexer.Add(perms_processed, key);
 
                 //for the first perm set, simply add them all
                 if (perms_processed == 0)
@@ -903,40 +908,56 @@ namespace PathfindingTutorial.Data_Structures
 
 
 
-            //M = PNP^T
+            //G2 = PG1P^T
 
-            var N = new Matrix(front.adjacencyMatrix);
+            var g1_adj = g1.GetAdjacencyMatrix();
+            var g2_adj = g2.GetAdjacencyMatrix();
 
-            bool isomorphic = false;
+            var G1 = new Matrix(g1_adj);
+            var G2 = new Matrix(g2_adj);
 
-            foreach (var perm_pick in permutationPicker)
+            foreach (int[] perm_pick in permutationPicker)
             {
                 var P = new Matrix(totalVertices, totalVertices);
-                foreach (var kvp in mapG1VerticesToG2Vertices)
-                    P[kvp.Value, kvp.Key] = 1;
 
-                for (int i = 0; i < totalToPermute; i++)
+                //obtain the set value for each permutation
+                for (int perm_set = 0; perm_set < perm_pick.Length; perm_set++)
                 {
-                    int key = permuteList[i];
-                    int value = perm_pick[i];
-                    P[value, key] = 1;
+                    var perm_index = perm_pick[perm_set];
+
+                    var perm_key = permIndexer[perm_set];
+
+                    var perm_value = permsFromG1ToG2[perm_key][perm_index];
+
+                    for (int i = 0; i < perm_key.Count; i++) {
+
+                        int vertexInG1 = perm_key[i];
+                        int vertexInG2 = perm_value[i];
+                        P[vertexInG1, vertexInG2] = 1;
+                    }
                 }
+
+
+                foreach (var kvp in mapG1VerticesToG2Vertices)
+                {
+                    int vertexInG1 = kvp.Key;
+                    int vertexInG2 = kvp.Value;
+                    P[vertexInG1, vertexInG2] = 1;
+                }
+
 
                 P.Print();
 
                 var inv = P.GetInverseMatrix();
 
-                inv.Print();
+                var result = P * G1 * inv;
 
-                var result = P * N * inv;
+                //result.Print();
 
-                result.Print();
-
-                if (result.Equals(originalAdjacency))
+                if (G2.Equals(result))
                 {
                     Console.WriteLine("EQUAL!");
-                    isomorphic = true;
-                    break;
+                    return true;
                 }
                 else
                 {
@@ -945,11 +966,7 @@ namespace PathfindingTutorial.Data_Structures
 
             }
 
-            if (!isomorphic)
-            {
-                Console.WriteLine("non isom");
-                continue;
-            }
+
             
 
             return false;
