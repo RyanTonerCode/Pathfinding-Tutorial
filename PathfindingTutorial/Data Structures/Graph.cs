@@ -858,9 +858,6 @@ namespace PathfindingTutorial.Data_Structures
 
             //need to pick a perm from each perm set...
 
-            int totalIndependentPermutations = permsFromG1ToG2.Count;
-
-
             var permIndexer = new Dictionary<int, List<int>>();
 
             var permutationPicker = new List<int[]>();
@@ -898,14 +895,12 @@ namespace PathfindingTutorial.Data_Structures
                     }
                 }
                 
-
                 perms_processed++;
             }
 
 
 
             int x = 5;
-
 
 
             //G2 = PG1P^T
@@ -916,9 +911,21 @@ namespace PathfindingTutorial.Data_Structures
             var G1 = new Matrix(g1_adj);
             var G2 = new Matrix(g2_adj);
 
+
+            //create a template permutation matrix
+            var template_perm_matrix = new int[totalVertices, totalVertices];
+            //link up the unique vertices
+            foreach (var kvp in mapG1VerticesToG2Vertices)
+            {
+                int vertexInG1 = kvp.Key;
+                int vertexInG2 = kvp.Value;
+                template_perm_matrix[vertexInG1, vertexInG2] = 1;
+            }
+
             foreach (int[] perm_pick in permutationPicker)
             {
-                var P = new Matrix(totalVertices, totalVertices);
+                //create the permutation matrix for the vertices from G1 to vertices in G2
+                var P = new Matrix(template_perm_matrix);
 
                 //obtain the set value for each permutation
                 for (int perm_set = 0; perm_set < perm_pick.Length; perm_set++)
@@ -935,28 +942,26 @@ namespace PathfindingTutorial.Data_Structures
                         int vertexInG2 = perm_value[i];
                         P[vertexInG1, vertexInG2] = 1;
                     }
-                }
+                }     
 
-
-                foreach (var kvp in mapG1VerticesToG2Vertices)
-                {
-                    int vertexInG1 = kvp.Key;
-                    int vertexInG2 = kvp.Value;
-                    P[vertexInG1, vertexInG2] = 1;
-                }
-
-
-                P.Print();
-
-                var inv = P.GetInverseMatrix();
-
-                var result = P * G1 * inv;
-
-                //result.Print();
+                var result = P * G1 * P.GetInverseMatrix();
 
                 if (G2.Equals(result))
                 {
-                    Console.WriteLine("EQUAL!");
+                    Console.WriteLine("\nIsomorphic!");
+
+                    Console.WriteLine("G1");
+                    G1.Print();
+                    Console.WriteLine("G2");
+                    G2.Print();
+                    Console.WriteLine("PG1P^(-1)");
+                    result.Print();
+
+                    for(int i = 0; i < totalVertices; i++)
+                        for (int j = 0; j < totalVertices; j++)
+                            if(P[i,j] == 1)
+                                Console.WriteLine("Mapped g1 Vertex {0} to g2 Vertex {1}", i, j);
+
                     return true;
                 }
                 else
