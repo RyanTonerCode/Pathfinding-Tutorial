@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MatrixMath;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using MatrixMath;
 
 namespace PathfindingTutorial.Data_Structures
 {
@@ -780,6 +780,181 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
+        public static bool CheckGraphIsomorphism(Graph<T> g1, Graph<T> g2)
+        {
+            //first look at the order and size
+            if (g1.TotalVertices != g2.TotalVertices || g1.TotalEdges != g2.TotalEdges)
+                return false;
+
+            int totalVertices = g1.TotalVertices;
+
+            var g1_DegreeSeq = g1.GetDegreeSequence();
+            var g2_DegreeSeq = g2.GetDegreeSequence();
+
+
+            //check the degree sequence next
+            for (int i = 0; i < totalVertices; i++)
+                if (g1_DegreeSeq[i] != g2_DegreeSeq[i])
+                    return false;
+
+            //check eigenvalues here...
+
+
+            //check permutations here...
+
+            //map each possible degree in g1 to a list of vertices with that degree
+            var g1_degreeMap = new Dictionary<int, List<int>>();
+            var g2_degreeMap = new Dictionary<int, List<int>>();
+
+            for (int i = 0; i < totalVertices; i++)
+            {
+                var degree_g1 = g1.graphStructure[i].GetDegree();
+                if (g1_degreeMap.ContainsKey(degree_g1))
+                    g1_degreeMap[degree_g1].Add(i);
+                else
+                    g1_degreeMap.Add(degree_g1, new List<int>() { i });
+
+                var degree_g2 = g2.graphStructure[i].GetDegree();
+                if (g2_degreeMap.ContainsKey(degree_g2))
+                    g2_degreeMap[degree_g2].Add(i);
+                else
+                    g2_degreeMap.Add(degree_g2, new List<int>() { i });
+            }
+
+            //map vertices in g1 (keys) to possible matches in g2 for isomorphism (values)
+            var mapG1VerticesToG2Vertices = new Dictionary<int, List<int>>();
+
+
+            var permsFromG1ToG2 = new Dictionary<List<int>, List<int[]>>();
+
+            
+            foreach (var (degree, g1_node_list) in g1_degreeMap)
+            {
+                int totalVerticesOfDegree = g1_node_list.Count;
+                if (totalVerticesOfDegree == 1)
+                {
+                    var g1_singleVertex = g1_degreeMap[degree][0];
+                    var g2_singleVertex = g2_degreeMap[degree][0];
+
+                    //map these nodes
+                    mapG1VerticesToG2Vertices[g1_singleVertex] = new List<int>() { g2_singleVertex };
+                    Console.WriteLine("Mapping g1 Vertex {0} to g2 Vertex {1} due to unique degree {2}", g1_singleVertex, g2_singleVertex, degree);
+                }
+                else
+                {
+                    //map nodes in g1 to list of nodes in g2 with the same degree
+                    foreach (var g1_node in g1_node_list)
+                    {
+                        mapG1VerticesToG2Vertices.Add(g1_node, g2_degreeMap[degree]);
+                    }
+                    var perms = new List<int[]>();
+
+                    heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, ref perms);
+
+                    permsFromG1ToG2.Add(g1_node_list, perms);
+                }
+
+            }
+
+            //need to pick a perm from each perm set...
+
+            int totalIndependentPermutations = permsFromG1ToG2.Count;
+
+            var permutationPicker = new List<int[]>();
+
+            int perms_processed = 0;
+            foreach(var key in permsFromG1ToG2.Keys)
+            {
+                var permList = permsFromG1ToG2[key];
+
+                //for the first perm set, simply add them all
+                if (perms_processed == 0)
+                {
+                    //add all possible perms to the permutation picker
+                    for (int select_perm = 0; select_perm < permList.Count; select_perm++)
+                        permutationPicker.Add(new int[] { select_perm });
+                }
+                else
+                {
+                    var clone_old_perms = permutationPicker.ToArray();
+                    //clear the old perms
+                    permutationPicker.Clear();
+
+                    for (int select_perm = 0; select_perm < permList.Count; select_perm++)
+                    {
+                        for(int prev_perm = 0; prev_perm < clone_old_perms.Length; prev_perm++)
+                        {
+                            var add_next_perm = new int[perms_processed + 1];
+                            Array.Copy(clone_old_perms[prev_perm], add_next_perm, perms_processed);
+                            add_next_perm[perms_processed] = select_perm;
+
+                            permutationPicker.Add(add_next_perm);
+                        }
+                    }
+                }
+                
+
+                perms_processed++;
+            }
+
+
+
+            int x = 5;
+
+
+
+            //M = PNP^T
+
+            var N = new Matrix(front.adjacencyMatrix);
+
+            bool isomorphic = false;
+
+            foreach (var perm_pick in permutationPicker)
+            {
+                var P = new Matrix(totalVertices, totalVertices);
+                foreach (var kvp in mapG1VerticesToG2Vertices)
+                    P[kvp.Value, kvp.Key] = 1;
+
+                for (int i = 0; i < totalToPermute; i++)
+                {
+                    int key = permuteList[i];
+                    int value = perm_pick[i];
+                    P[value, key] = 1;
+                }
+
+                P.Print();
+
+                var inv = P.GetInverseMatrix();
+
+                inv.Print();
+
+                var result = P * N * inv;
+
+                result.Print();
+
+                if (result.Equals(originalAdjacency))
+                {
+                    Console.WriteLine("EQUAL!");
+                    isomorphic = true;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+
+            }
+
+            if (!isomorphic)
+            {
+                Console.WriteLine("non isom");
+                continue;
+            }
+            
+
+            return false;
+        }
+
 
         public bool IsValidMinor(Graph<int> checkMinor)
         {
@@ -816,16 +991,6 @@ namespace PathfindingTutorial.Data_Structures
             var degreeSetOriginal = new int[TotalVertices];
             for (int i = 0; i < TotalVertices; i++)
                 degreeSetOriginal[i] = graphStructure[i].GetDegree();
-
-            //map each possible degree in the minor to a list of vertices
-            var degreeSetMinor = new Dictionary<int,List<int>>();
-            for (int i = 0; i < TotalVertices; i++) {
-                var degree = minorClone.graphStructure[i].GetDegree();
-                if (degreeSetMinor.ContainsKey(degree))
-                    degreeSetMinor[degree].Add(i);
-                else
-                    degreeSetMinor.Add(degree, new List<int>() { i });
-            }
 
             var degreeSeqOriginal = GetDegreeSequence();
 
@@ -876,92 +1041,8 @@ namespace PathfindingTutorial.Data_Structures
 
                     Console.WriteLine("Found a minor with same degree sequence... Checking for isomorphism with the given minor now");
 
-                    var mapMinorMatrixToCandidateIsom = new Dictionary<int, int>();
 
                     possibilities_by_degree_seq++;
-
-                    int[] permuteList = new int[TotalVertices];
-                    int[] permuteVertices = new int[TotalVertices];
-                    int totalToPermute = 0;
-
-                    //M = PNP^T
-                    for (int i = 0; i < TotalVertices; i++)
-                    {
-                        int degreeForThisRow = front.totalNeighbors[i];
-                        if (degreeSetMinor[degreeForThisRow].Count == 1)
-                        {
-                            var vertexInMinor = degreeSetMinor[degreeForThisRow][0];
-                            //map these nodes
-                            mapMinorMatrixToCandidateIsom[vertexInMinor] = i;
-                            Console.WriteLine("Mapping Minor Vertex {0} to Candidate Vertex {1} due to unique degree {2}", vertexInMinor, i, degreeForThisRow);
-                        }
-                        else
-                        {
-                            var first = degreeSetMinor[degreeForThisRow][0];
-                            //need to permute here....
-                            permuteList[totalToPermute] = first;
-                            degreeSetMinor[degreeForThisRow].RemoveAt(0);
-                            degreeSetMinor[degreeForThisRow].Insert(degreeSetMinor[degreeForThisRow].Count, first);
-
-                            permuteVertices[totalToPermute] = i;
-                            totalToPermute++;
-                        }
-
-                    }
-
-                    var perms = new List<int[]>();
-
-                    heapPermutations(permuteVertices, totalToPermute, totalToPermute, ref perms);
-
-                    
-                    var N = new Matrix(front.adjacencyMatrix);
-
-                    bool isomorphic = false;
-
-                    foreach(var perm in perms)
-                    {
-                        var P = new Matrix(TotalVertices, TotalVertices);
-                        foreach(var kvp in mapMinorMatrixToCandidateIsom)
-                            P[kvp.Value, kvp.Key] = 1;
-
-                        for (int i = 0; i < totalToPermute; i++)
-                        {
-                            int key = permuteList[i];
-                            int value = perm[i];
-                            P[value, key] = 1;
-                        }
-
-                        P.Print();
-
-                        var inv = P.GetInverseMatrix();
-
-                        inv.Print();
-
-                        var result = P * N * inv;
-
-                        result.Print();
-
-                        if(result.Equals(originalAdjacency))
-                        {
-                            Console.WriteLine("EQUAL!");
-                            isomorphic = true;
-                            break;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-
-                        Console.WriteLine(perm);
-
-
-                    }
-
-                    if (!isomorphic)
-                    {
-                        Console.WriteLine("non isom");
-                        continue;
-                    }
 
                     //(assuming they are equivalent for now)...
                     var stk = new Stack<EdgeRemovalGraphSearch>(minorEdgeDifference);

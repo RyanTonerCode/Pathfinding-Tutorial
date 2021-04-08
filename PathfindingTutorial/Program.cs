@@ -21,13 +21,14 @@ namespace PathfindingTutorial
             FIND_COMPONENTS,
             PRUFER_TO_TREE,
             DEGREE_SEQUENCE_CONSTRUCTOR,
-           IS_VALID_MINOR
+            IS_VALID_MINOR,
+            ISOMORPHISM
         };
 
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.IS_VALID_MINOR;
+            SUBPROGRAM sp = SUBPROGRAM.ISOMORPHISM;
 
             switch (sp)
             {
@@ -79,6 +80,10 @@ namespace PathfindingTutorial
                     break;
                 case SUBPROGRAM.IS_VALID_MINOR:
                     IsValidMinor();
+                    break;
+
+                case SUBPROGRAM.ISOMORPHISM:
+                    IsIsomorphic();
                     break;
             }
 
