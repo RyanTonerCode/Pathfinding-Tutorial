@@ -782,6 +782,8 @@ namespace PathfindingTutorial.Data_Structures
 
         public static bool CheckGraphIsomorphism(Graph<T> g1, Graph<T> g2)
         {
+            Console.WriteLine("STARTING GRAPH ISOMORPHISM CHECK");
+
             //first look at the order and size
             if (g1.TotalVertices != g2.TotalVertices || g1.TotalEdges != g2.TotalEdges)
                 return false;
@@ -796,6 +798,22 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < totalVertices; i++)
                 if (g1_DegreeSeq[i] != g2_DegreeSeq[i])
                     return false;
+
+            var g1_adj = g1.GetAdjacencyMatrix();
+            var g2_adj = g2.GetAdjacencyMatrix();
+
+            //check adjacency matrix here
+            int adjEqualCount = 0;
+            for (int i = 0; i < totalVertices; i++)
+                for (int j = 0; j < totalVertices; j++)
+                    if (g1_adj[i, j] == g2_adj[i, j])
+                        adjEqualCount++;
+
+            if(adjEqualCount == totalVertices * totalVertices)
+            {
+                Console.WriteLine("Identical Adjacency Matrices");
+                return true;
+            }
 
             //check eigenvalues here...
 
@@ -898,19 +916,10 @@ namespace PathfindingTutorial.Data_Structures
                 perms_processed++;
             }
 
-
-
-            int x = 5;
-
-
             //G2 = PG1P^T
-
-            var g1_adj = g1.GetAdjacencyMatrix();
-            var g2_adj = g2.GetAdjacencyMatrix();
 
             var G1 = new Matrix(g1_adj);
             var G2 = new Matrix(g2_adj);
-
 
             //create a template permutation matrix
             var template_perm_matrix = new int[totalVertices, totalVertices];
