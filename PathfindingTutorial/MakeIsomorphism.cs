@@ -1,6 +1,5 @@
 ﻿using PathfindingTutorial.Data_Structures;
 using System;
-using System.Collections.Generic;
 
 namespace PathfindingTutorial
 {
@@ -42,13 +41,11 @@ namespace PathfindingTutorial
             g4_adj[0, 2] = 1;
             g4_adj[0, 3] = 1;
             g4_adj[2, 3] = 1;
-            g4_adj[4, 5] = 1;
-
+            g4_adj[5, 6] = 1;
 
             var G4 = Graph<int>.GenerateGraphForAdjacencyMatrix(g4_adj, true);
 
             Console.WriteLine(Graph<int>.CheckGraphIsomorphism(G3, G4));
-
 
         }
     }

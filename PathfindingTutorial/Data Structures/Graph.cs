@@ -736,7 +736,7 @@ namespace PathfindingTutorial.Data_Structures
         }
 
         // Generating permutation using Heap Algorithm
-        static void heapPermutations(int[] a, int size, int n, ref List<int[]> permutations)
+        private static void heapPermutations(int[] a, int size, int n, List<int[]> permutations)
         {
             var stk = new Stack<(int[] a, int size, int n)>();
 
@@ -860,14 +860,9 @@ namespace PathfindingTutorial.Data_Structures
                 }
                 else
                 {
-                    //map nodes in g1 to list of nodes in g2 with the same degree
-                    foreach (var g1_node in g1_node_list)
-                    {
-                        //mapG1VerticesToG2Vertices.Add(g1_node, g2_degreeMap[degree]);
-                    }
                     var perms = new List<int[]>();
 
-                    heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, ref perms);
+                    heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, perms);
 
                     permsFromG1ToG2.Add(g1_node_list, perms);
                 }
@@ -916,7 +911,7 @@ namespace PathfindingTutorial.Data_Structures
                 perms_processed++;
             }
 
-            //G2 = PG1P^T
+            //G2 = PG1P^(-1)
 
             var G1 = new Matrix(g1_adj);
             var G2 = new Matrix(g2_adj);
@@ -928,8 +923,10 @@ namespace PathfindingTutorial.Data_Structures
             {
                 int vertexInG1 = kvp.Key;
                 int vertexInG2 = kvp.Value;
-                template_perm_matrix[vertexInG1, vertexInG2] = 1;
+                template_perm_matrix[vertexInG2, vertexInG1] = 1;
             }
+
+            //new Matrix(template_perm_matrix).Print();
 
             foreach (int[] perm_pick in permutationPicker)
             {
@@ -949,9 +946,9 @@ namespace PathfindingTutorial.Data_Structures
 
                         int vertexInG1 = perm_key[i];
                         int vertexInG2 = perm_value[i];
-                        P[vertexInG1, vertexInG2] = 1;
+                        P[vertexInG2, vertexInG1] = 1;
                     }
-                }     
+                }
 
                 var result = P * G1 * P.GetInverseMatrix();
 
@@ -966,22 +963,18 @@ namespace PathfindingTutorial.Data_Structures
                     Console.WriteLine("PG1P^(-1)");
                     result.Print();
 
-                    for(int i = 0; i < totalVertices; i++)
+                    Console.WriteLine("P");
+                    P.Print();
+
+                    for (int i = 0; i < totalVertices; i++)
                         for (int j = 0; j < totalVertices; j++)
                             if(P[i,j] == 1)
                                 Console.WriteLine("Mapped g1 Vertex {0} to g2 Vertex {1}", i, j);
 
                     return true;
                 }
-                else
-                {
-                    continue;
-                }
 
-            }
-
-
-            
+            } 
 
             return false;
         }
