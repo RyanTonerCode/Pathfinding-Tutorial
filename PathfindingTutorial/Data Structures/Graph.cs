@@ -9,9 +9,10 @@ namespace PathfindingTutorial.Data_Structures
     {
         protected readonly List<IGraphNode<T>> graphStructure = new();
 
+        public int[,] AdjacencyMatrix { get; private set; }
+
         public int TotalVertices { get; private set; }
         public int TotalEdges { get; private set; }
-
 
         public Graph<T> Clone()
         {
@@ -35,10 +36,13 @@ namespace PathfindingTutorial.Data_Structures
         }
 
         #region Adjacency Matrix
-        public int[,] GetAdjacencyMatrix()
+        public int[,] GetAdjacencyMatrix(bool ForceRecalculate)
         {
+            if (AdjacencyMatrix != null && !ForceRecalculate)
+                return AdjacencyMatrix;
+
             //initialize the adjacency matrix
-            var adjacencyMatrix = new int[graphStructure.Count, graphStructure.Count];
+            AdjacencyMatrix = new int[graphStructure.Count, graphStructure.Count];
 
             //associate each node to a unique integer
             var nodeMap = new Dictionary<IGraphNode<T>, int>();
@@ -51,10 +55,10 @@ namespace PathfindingTutorial.Data_Structures
                 var node = graphStructure[i];
                 var neighbors = node.GetNeighbors();
                 foreach(var n in neighbors)
-                    adjacencyMatrix[i, nodeMap[n]] = 1;
+                    AdjacencyMatrix[i, nodeMap[n]] = 1;
             }
 
-            return adjacencyMatrix;
+            return AdjacencyMatrix;
         }
         #endregion
 
@@ -123,7 +127,7 @@ namespace PathfindingTutorial.Data_Structures
         {
             var edges = new List<Edge<T>>();
 
-            var adjacencyMatrix = GetAdjacencyMatrix();
+            var adjacencyMatrix = GetAdjacencyMatrix(false);
 
             for (int i = 0; i < graphStructure.Count; i++)
             {
@@ -140,6 +144,22 @@ namespace PathfindingTutorial.Data_Structures
                     }
                 }
             }
+
+            return edges;
+        }
+
+        public List<(int, int)> GetEdgeListUndirectedIJ()
+        {
+            var edges = new List<(int, int)>(TotalEdges);
+
+            var adjacencyMatrix = GetAdjacencyMatrix(true);
+
+            for (int i = 0; i < graphStructure.Count; i++)
+                for (int j = i + 1; j < graphStructure.Count; j++)
+                {
+                    if (adjacencyMatrix[i, j] == 1)
+                        edges.Add((i, j));
+                }
 
             return edges;
         }
@@ -178,10 +198,16 @@ namespace PathfindingTutorial.Data_Structures
             TotalVertices++;
         }
 
-        public void RemoveNode(IGraphNode<T> Node)
+        public void RemoveNode(IGraphNode<T> Node, bool RemoveNeighbors=false)
         {
             graphStructure.Remove(Node);
             TotalVertices--;
+            if (RemoveNeighbors)
+                foreach (var neighbor in Node.GetNeighbors())
+                {
+                    neighbor.RemoveNeighbor(Node);
+                    TotalEdges--;
+                }
         }
 
         public NodePath<T> RunDFS(IGraphNode<T> Start, IGraphNode<T> End)
@@ -635,51 +661,38 @@ namespace PathfindingTutorial.Data_Structures
             return components;
         }
 
-        public class EdgeRemovalGraphSearch
+        private class minorFindingGraphSearch
         {
-            public int[,] adjacencyMatrix;
-            public int[] totalNeighbors;
-            public int edgesRemoved;
-            public EdgeRemovalGraphSearch parent;
-            public Edge<T> edgeRemoved;
+            public Graph<T> minor;
+            public minorFindingGraphSearch parent;
+            public string action = "";
 
-            public EdgeRemovalGraphSearch(int[,] adjacencyMatrix, int[] totalNeighbors, int edgesRemoved, EdgeRemovalGraphSearch parent, Edge<T> edgeRemoved=null)
+            public minorFindingGraphSearch(Graph<T> minor, minorFindingGraphSearch parent, string action = "")
             {
-                this.adjacencyMatrix = adjacencyMatrix;
-                this.totalNeighbors = totalNeighbors;
-                this.edgesRemoved = edgesRemoved;
+                this.minor = minor;
                 this.parent = parent;
-                this.edgeRemoved = edgeRemoved;
+                this.action = action;
             }
         }
 
-        public bool IsValidMinor(Graph<int> checkMinor)
+        
+        public bool IsValidMinor(Graph<T> checkMinor)
         {
             if (checkMinor.TotalVertices > TotalVertices || checkMinor.TotalEdges > TotalEdges)
                 return false;
 
             //clone the minor
-            var minorClone = checkMinor.Clone();
-
-            //First, add as many vertices as needed...
-            int vertexDifference = TotalVertices - minorClone.TotalVertices;
-
-            for (int i = 0; i < vertexDifference; i++)
-            {
-                int label = minorClone.TotalVertices + i;
-                Console.WriteLine("Created Vertex {0}", label);
-                minorClone.AddNode(new GraphNode<int>(label));
-            }            
+            Graph<T> my_clone = Clone();   
 
             //Get adjacency matrices for both graphs
-            var adjacencyMatrixOriginal = GetAdjacencyMatrix();
-            var adjMatrixMinor = minorClone.GetAdjacencyMatrix();
+
+            var adjMatrixMinor = checkMinor.GetAdjacencyMatrix(true);
 
             Console.WriteLine("\n***Adjacency Matrix of Original***\n");
-            PrintAdjacencyMatrix(adjacencyMatrixOriginal);
+            PrintAdjacencyMatrix(GetAdjacencyMatrix(true));
             Console.WriteLine("\n*******************************\n");
 
-            Console.WriteLine("\n***Adjacency Matrix of Possible Minor***\n");
+            Console.WriteLine("\n***Adjacency Matrix of Candidate Minor***\n");
             PrintAdjacencyMatrix(adjMatrixMinor);
             Console.WriteLine("\n*******************************\n");
 
@@ -688,129 +701,164 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < TotalVertices; i++)
                 degreeSetOriginal[i] = graphStructure[i].GetDegree();
 
-            var degreeSeqOriginal = GetDegreeSequence();
+            var degreeSeqGraph = GetDegreeSequence();
 
             //Get the degree sequence of the minor
-            var degreeSeqMinor = minorClone.GetDegreeSequence();
+            var degreeSeqCheck = checkMinor.GetDegreeSequence();
 
-            Console.WriteLine("Degree Sequence of the Original: " + string.Join(",", degreeSeqOriginal));
-            Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqMinor));
+            Console.WriteLine("Degree Sequence of the Original: " + string.Join(",", degreeSeqGraph));
+            Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqCheck));
             Console.WriteLine();
 
-            //Figure out how many edges we have to remove from the original
-            int minorEdgeDifference = TotalEdges - minorClone.TotalEdges;
-
             //queue references adjacency matrix to an int of the number of edges removes
-            var queue = new Queue<EdgeRemovalGraphSearch>();
+            var queue = new Queue<minorFindingGraphSearch>();
 
-            var start = new EdgeRemovalGraphSearch(adjacencyMatrixOriginal, degreeSetOriginal, 0, null);
+            var start = new minorFindingGraphSearch(my_clone, null);
 
             queue.Enqueue(start);
 
             int searchSpace = 0;
-            int possibilities_by_degree_seq = 0;
-
-            var originalAdjacency = new Matrix(adjacencyMatrixOriginal);
-
+            
             while (queue.Count > 0)
             {
                 searchSpace++;
 
                 var front = queue.Dequeue();
 
-                //check the neighbor sums to eliminate impossible assignments
-                var sortedNeighbors = new List<int>(front.totalNeighbors);
-                sortedNeighbors.Sort((x, y) => y.CompareTo(x));
+                var tot_minor_vertices = front.minor.TotalVertices;
 
-                int degreesEquivalent = 0;
-                for (int i = 0; i < TotalVertices; i++)
-                    //if we have a degree in sequence with lower value than the minor, this graph cannot be isomorphic to the minor
-                    if (sortedNeighbors[i] < degreeSeqMinor[i]) 
-                        continue;
-                    //otherwise count the number of degrees that are equivalent
-                    else if (sortedNeighbors[i] == degreeSeqMinor[i])
-                        degreesEquivalent++;
-
-                if(degreesEquivalent == TotalVertices && front.edgesRemoved == minorEdgeDifference)
+                if (tot_minor_vertices == checkMinor.TotalVertices && front.minor.TotalEdges == checkMinor.TotalEdges)
                 {
-                    //the graphs have the same degree sequence, so try for an isomorphism now...
+                    var degreeSeqMinor = front.minor.GetDegreeSequence();
 
-                    Console.WriteLine("Found a minor with same degree sequence... Checking for isomorphism with the given minor now");
+                    int degreesEquivalent = 0;
 
+                    for (int i = 0; i < tot_minor_vertices; i++)
+                        //otherwise count the number of degrees that are equivalent
+                        if (degreeSeqCheck[i] == degreeSeqMinor[i])
+                            degreesEquivalent++;
 
-                    possibilities_by_degree_seq++;
-
-                    //(assuming they are equivalent for now)...
-                    var stk = new Stack<EdgeRemovalGraphSearch>(minorEdgeDifference);
-
-                    var backtracking = front;
-                    while (backtracking != null)
+                    if (degreesEquivalent == tot_minor_vertices)
                     {
-                        stk.Push(backtracking);
-                        backtracking = backtracking.parent;
+                        //the graphs have the same degree sequence, so try for an isomorphism now...
+
+                        Console.WriteLine("Found a valid minor with same degree sequence... Checking for isomorphism with the given minor now");
+
+                        front.minor.GetAdjacencyMatrix(true);
+
+                        var isom = CheckGraphIsomorphism(checkMinor, front.minor);
+
+                        if (!isom)
+                        {
+                            continue;
+                        }
+
+                        Console.WriteLine("isom");
+
+                        //(assuming they are equivalent for now)...
+                        var stk = new Stack<minorFindingGraphSearch>(10);
+
+                        var backtracking = front;
+                        while (backtracking != null)
+                        {
+                            stk.Push(backtracking);
+                            backtracking = backtracking.parent;
+                        }
+
+                        while (stk.Count > 0)
+                        {
+                            var top = stk.Pop();
+
+                            top.minor.PrintAdjacencyMatrix();
+
+                            Console.WriteLine(top.action);
+                        }
+
+                        return true;
                     }
-
-                    while(stk.Count > 0)
-                    {
-                        var top = stk.Pop();
-
-                        var edgeRemoved = top.edgeRemoved;
-                        if (edgeRemoved != null)
-                            Console.WriteLine("Remove Edge {0}\n", edgeRemoved);
-
-                        PrintAdjacencyMatrix(top.adjacencyMatrix);
-                        Console.WriteLine();
-                    }
-
-                    //return true;
                 }
-
+  
                 //do not spawn more minors if the edge difference is already met
-                if (front.edgesRemoved == minorEdgeDifference)
+                if (tot_minor_vertices < checkMinor.TotalVertices && front.minor.TotalEdges < checkMinor.TotalEdges)
                     continue;
 
-                //enqueue all possibilities of removing edges
-                for (int i = 0; i < TotalVertices; i++)
-                    for(int j = i + 1; j < TotalVertices; j++)
-                        //for every edge, try removing it
-                        if(front.adjacencyMatrix[i,j] == 1)
+                if (tot_minor_vertices > checkMinor.TotalVertices) {
+                    //try removing a vertex...
+                    for (int i = 0; i < front.minor.TotalVertices; i++)
+                    {
+                        int vertex_degree = graphStructure[i].GetDegree();
+
+                        if (front.minor.TotalEdges - vertex_degree >= checkMinor.TotalEdges)
                         {
-                            var newMatrix = (int[,])front.adjacencyMatrix.Clone();
-                            newMatrix[i, j] = 0;
-                            newMatrix[j, i] = 0;
-                            var newTotalNeighbors = (int[])front.totalNeighbors.Clone();
-                            newTotalNeighbors[i]--;
-                            newTotalNeighbors[j]--;
-                            var edgeRemoved = new Edge<T>(graphStructure[i], graphStructure[j]);
-                            queue.Enqueue(new EdgeRemovalGraphSearch(newMatrix, newTotalNeighbors, front.edgesRemoved + 1, front, edgeRemoved));
+
+                            var new_minor = front.minor.Clone();
+                            var vertex = new_minor.graphStructure[i];
+                            new_minor.RemoveNode(vertex, true);
+
+                            var vertex_removed_str = string.Format("Removed Node {0}", i);
+
+                            queue.Enqueue(new minorFindingGraphSearch(new_minor, front, vertex_removed_str));
                         }
-                            
-                    
+                    }
+                }
+
+                
+                if (front.minor.TotalEdges > checkMinor.TotalEdges)
+                {
+                    //try removing an edge
+
+                    List<(int i, int j)> edgeList = front.minor.GetEdgeListUndirectedIJ();
+
+                    foreach (var (i, j) in edgeList)
+                    {
+                        var new_minor_edge_remove = front.minor.Clone();
+
+                        new_minor_edge_remove.RemoveEdge(i, j);
+
+                        var edge_removed_str = string.Format("Removed Edge {0}-{1}", i, j);
+
+                        queue.Enqueue(new minorFindingGraphSearch(new_minor_edge_remove, front, edge_removed_str));
+
+                        if (tot_minor_vertices > checkMinor.TotalVertices)
+                        {
+                            //try contracting an edge
+                            var new_minor_contract = front.minor.Clone();
+
+                            new_minor_contract.ContractEdge(i, j);
+
+                            var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", i, j);
+
+                            queue.Enqueue(new minorFindingGraphSearch(new_minor_contract, front, edge_contracted_str));
+                        }
+                    }
+                }
+
+
             }
 
             Console.WriteLine(searchSpace);
-            Console.WriteLine(possibilities_by_degree_seq);
 
             //graph is not a valid minor
             return false;
         }
+        
 
         public void PrintAdjacencyMatrix(int[,] provided_adjMatrix = null)
         {
             var sb = new StringBuilder("   ");
-            var adjacencyMatrix = provided_adjMatrix ?? GetAdjacencyMatrix();
+            var adjacencyMatrix = provided_adjMatrix ?? GetAdjacencyMatrix(false);
 
             var totalVertices = adjacencyMatrix.GetLength(0);
 
             for (int i = 0; i < totalVertices; i++)
-                sb.Append(graphStructure[i].GetValue() + " ");
+                sb.Append(graphStructure[i].GetValue()).Append(' ');
 
             sb.AppendLine();
             for (int i = 0; i < totalVertices; i++)
             {
-                sb.Append(graphStructure[i].GetValue() + ": ");
+                sb.Append(graphStructure[i].GetValue()).Append(':').Append(')');
                 for (int j = 0; j < totalVertices; j++)
-                    sb.Append(adjacencyMatrix[i,j] + " ");
+                    sb.Append(adjacencyMatrix[i,j]).Append(' ');
                 sb.AppendLine();
             }
             Console.Write(sb);
@@ -841,5 +889,47 @@ namespace PathfindingTutorial.Data_Structures
         public int GetOrder() => graphStructure.Count;
 
         public int GetSize() => GetEdgeListUndirected().Count;
+
+        public void RemoveEdge(int i, int j, bool directed = false)
+        {
+            TotalEdges--;
+            IGraphNode<T>.RemoveMutualNeighbor(graphStructure[i], graphStructure[j]);
+            if(AdjacencyMatrix != null)
+            {
+                AdjacencyMatrix[i, j] = 0;
+                if(!directed)
+                    AdjacencyMatrix[j, i] = 0;
+            }
+        }
+
+        public void ContractEdge(int i, int j)
+        {
+            TotalVertices--;
+            TotalEdges--;
+
+            //keep node1
+            var node1 = graphStructure[i];
+
+            var existingNeighbors = node1.GetNeighbors();
+
+            var node2 = graphStructure[j];
+
+            IGraphNode<T>.RemoveMutualNeighbor(node1, node2);
+
+            foreach (var neighbor in node2.GetNeighbors())
+            {
+                neighbor.RemoveNeighbor(node2);
+                if (existingNeighbors.Contains(neighbor))
+                {
+                    TotalEdges--;
+                    continue;
+                }
+                IGraphNode<T>.AddMutualNeighbor(node1, neighbor);
+            }
+
+            RemoveNode(node2);
+
+            GetAdjacencyMatrix(false);
+        }
     }
 }

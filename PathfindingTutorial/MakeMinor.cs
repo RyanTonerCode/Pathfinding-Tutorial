@@ -9,6 +9,7 @@ namespace PathfindingTutorial
 
         private static void IsValidMinor()
         {
+            bool undirected = true;
 
             var graphAdjacency = new int[5, 5];
             graphAdjacency[0, 1] = 1;
@@ -19,7 +20,7 @@ namespace PathfindingTutorial
             graphAdjacency[2, 3] = 1;
             graphAdjacency[3, 4] = 1;
 
-            var G = Graph<int>.GenerateGraphForAdjacencyMatrix(graphAdjacency, true);
+            var G = Graph<int>.GenerateGraphForAdjacencyMatrix(graphAdjacency, undirected);
 
             var minorAdjacency = new int[4, 4];
             minorAdjacency[0, 1] = 1;
@@ -27,7 +28,7 @@ namespace PathfindingTutorial
             minorAdjacency[1, 3] = 1;
             minorAdjacency[2, 3] = 1;
 
-            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency, true);
+            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency, undirected);
 
             G.IsValidMinor(M);
         }

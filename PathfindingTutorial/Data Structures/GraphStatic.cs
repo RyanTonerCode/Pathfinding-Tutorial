@@ -169,14 +169,14 @@ namespace PathfindingTutorial.Data_Structures
 
             Console.WriteLine("Degree sequences are identical");
 
-            var g1_adj = g1.GetAdjacencyMatrix();
-            var g2_adj = g2.GetAdjacencyMatrix();
+            var g1_adj = g1.GetAdjacencyMatrix(false);
+            var g2_adj = g2.GetAdjacencyMatrix(false);
 
             //check adjacency matrix here
             int adjEqualCount = 0;
             for (int i = 0; i < totalVertices; i++)
                 for (int j = 0; j < totalVertices; j++)
-                    if (g1_adj[i, j] != g2_adj[i, j])
+                    if (g1_adj[i, j] == g2_adj[i, j])
                         adjEqualCount++;
 
             if (adjEqualCount == totalVertices * totalVertices)
@@ -233,6 +233,24 @@ namespace PathfindingTutorial.Data_Structures
                     var perms = new List<int[]>();
 
                     heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, perms);
+
+                    var g1_sb = new StringBuilder();
+                    var g2_sb = new StringBuilder();
+
+                    for (int i = 0; i < g1_degreeMap[degree].Count; i++)
+                    {
+                        g1_sb.Append(g1_degreeMap[degree][i]);
+                        g2_sb.Append(g2_degreeMap[degree][i]);
+                        if (i < g1_degreeMap[degree].Count - 1)
+                        {
+                            g1_sb.Append(',');
+                            g2_sb.Append(',');
+                        }
+                    }
+
+                    Console.WriteLine("G1 vertices of degree {0}: ({1})", degree, g1_sb);
+                    Console.WriteLine("G2 vertices of degree {0}: ({1})", degree, g2_sb);
+
 
                     permsFromG1ToG2.Add(g1_node_list, perms);
                 }

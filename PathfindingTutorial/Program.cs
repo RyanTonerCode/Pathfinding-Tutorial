@@ -28,7 +28,7 @@ namespace PathfindingTutorial
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            SUBPROGRAM sp = SUBPROGRAM.ISOMORPHISM;
+            var sp = SUBPROGRAM.IS_VALID_MINOR;
 
             switch (sp)
             {
