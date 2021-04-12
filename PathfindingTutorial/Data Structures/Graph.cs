@@ -753,7 +753,7 @@ namespace PathfindingTutorial.Data_Structures
                             continue;
                         }
 
-                        Console.WriteLine("isom");
+                        Console.WriteLine("Minors are isomorphic ==> Valid Minor");
 
                         //(assuming they are equivalent for now)...
                         var stk = new Stack<minorFindingGraphSearch>(10);
@@ -769,9 +769,12 @@ namespace PathfindingTutorial.Data_Structures
                         {
                             var top = stk.Pop();
 
+                            Console.WriteLine(top.action);
+
+                            Console.WriteLine("-------------------------");
+
                             top.minor.PrintAdjacencyMatrix();
 
-                            Console.WriteLine(top.action);
                         }
 
                         return true;
@@ -904,7 +907,6 @@ namespace PathfindingTutorial.Data_Structures
 
         public void ContractEdge(int i, int j)
         {
-            TotalVertices--;
             TotalEdges--;
 
             //keep node1
@@ -929,7 +931,7 @@ namespace PathfindingTutorial.Data_Structures
 
             RemoveNode(node2);
 
-            GetAdjacencyMatrix(false);
+            GetAdjacencyMatrix(true);
         }
     }
 }
