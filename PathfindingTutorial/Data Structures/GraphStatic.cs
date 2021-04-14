@@ -56,13 +56,19 @@ namespace PathfindingTutorial.Data_Structures
         {
             var degreeSequenceList = new List<DegreeSequenceData>(degreeSequence.Length);
 
+            int sumDegreeSequence = 0;
+
             var G = new Graph<int>();
             for (int i = 0; i < degreeSequence.Length; i++)
             {
                 var node = new GraphNode<int>(i);
+                sumDegreeSequence += degreeSequence[i];
                 degreeSequenceList.Add(new DegreeSequenceData(node, degreeSequence[i]));
                 G.AddNode(node);
             }
+
+            //By handshaking lemma
+            G.TotalEdges = sumDegreeSequence / 2;
 
             while (true)
             {
@@ -155,9 +161,8 @@ namespace PathfindingTutorial.Data_Structures
 
             int totalVertices = g1.TotalVertices;
 
-            var g1_DegreeSeq = g1.GetDegreeSequence();
-            var g2_DegreeSeq = g2.GetDegreeSequence();
-
+            var g1_DegreeSeq = g1.GetDegreeSequence(false, true);
+            var g2_DegreeSeq = g2.GetDegreeSequence(false, true);
 
             //check the degree sequence next
             for (int i = 0; i < totalVertices; i++)

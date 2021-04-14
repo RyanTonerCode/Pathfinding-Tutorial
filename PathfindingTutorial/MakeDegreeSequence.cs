@@ -30,7 +30,7 @@ namespace PathfindingTutorial
                     Console.WriteLine();
                     graph.PrintAdjacencyMatrix();
                     Console.WriteLine();
-                    var checkSeq = graph.GetDegreeSequence();
+                    var checkSeq = graph.GetDegreeSequence(true, true);
                     PrintArray(checkSeq.ToArray());
                 }
                 Console.WriteLine();

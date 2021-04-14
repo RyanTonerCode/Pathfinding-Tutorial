@@ -1,5 +1,4 @@
-﻿using MatrixMath;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,6 +9,9 @@ namespace PathfindingTutorial.Data_Structures
         protected readonly List<IGraphNode<T>> graphStructure = new();
 
         public int[,] AdjacencyMatrix { get; private set; }
+
+        public List<int> DegreeSequence { get; private set; }
+
 
         public int TotalVertices { get; private set; }
         public int TotalEdges { get; private set; }
@@ -67,17 +69,20 @@ namespace PathfindingTutorial.Data_Structures
         /// Obtain a sorted degree sequence for the graph from greatest to least
         /// </summary>
         /// <returns></returns>
-        public List<int> GetDegreeSequence(bool sort=true)
+        public List<int> GetDegreeSequence(bool forceRecalculate, bool sort=true)
         {
-            var degreeSequence = new List<int>(graphStructure.Count);
+            if (DegreeSequence != null && !forceRecalculate)
+                return DegreeSequence;
+
+            DegreeSequence = new List<int>(graphStructure.Count);
 
             foreach (var node in graphStructure)
-                degreeSequence.Add(node.GetDegree());
+                DegreeSequence.Add(node.GetDegree());
 
             if(sort)
-                degreeSequence.Sort((x, y) => y.CompareTo(x));
+                DegreeSequence.Sort((x, y) => y.CompareTo(x));
 
-            return degreeSequence;
+            return DegreeSequence;
         }
 
         private class DegreeSequenceData
@@ -661,17 +666,26 @@ namespace PathfindingTutorial.Data_Structures
             return components;
         }
 
-        private class minorFindingGraphSearch
+        private class MinorFindingGraphSearch : IComparable
         {
             public Graph<T> minor;
-            public minorFindingGraphSearch parent;
-            public string action = "";
+            public MinorFindingGraphSearch parent;
+            public string action;
 
-            public minorFindingGraphSearch(Graph<T> minor, minorFindingGraphSearch parent, string action = "")
+            public MinorFindingGraphSearch(Graph<T> minor, MinorFindingGraphSearch parent, string action = "")
             {
                 this.minor = minor;
                 this.parent = parent;
                 this.action = action;
+            }
+
+            public int CompareTo(object obj)
+            {
+                if (obj is MinorFindingGraphSearch cast)
+                {
+                    return (cast.minor.TotalVertices + cast.minor.TotalEdges).CompareTo(minor.TotalVertices + minor.TotalEdges);
+                }
+                return 0;
             }
         }
 
@@ -696,30 +710,25 @@ namespace PathfindingTutorial.Data_Structures
             PrintAdjacencyMatrix(adjMatrixMinor);
             Console.WriteLine("\n*******************************\n");
 
-            //Generate a degree set for the original graph
-            var degreeSetOriginal = new int[TotalVertices];
-            for (int i = 0; i < TotalVertices; i++)
-                degreeSetOriginal[i] = graphStructure[i].GetDegree();
-
-            var degreeSeqGraph = GetDegreeSequence();
+            var degreeSeqGraph = GetDegreeSequence(false, true);
 
             //Get the degree sequence of the minor
-            var degreeSeqCheck = checkMinor.GetDegreeSequence();
+            var degreeSeqCheck = checkMinor.GetDegreeSequence(false, true);
 
             Console.WriteLine("Degree Sequence of the Original: " + string.Join(",", degreeSeqGraph));
             Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqCheck));
             Console.WriteLine();
 
             //queue references adjacency matrix to an int of the number of edges removes
-            var queue = new Queue<minorFindingGraphSearch>();
+            var queue = new Heap<MinorFindingGraphSearch>(1000000);
 
-            var start = new minorFindingGraphSearch(my_clone, null);
+            var start = new MinorFindingGraphSearch(my_clone, null);
 
             queue.Enqueue(start);
 
             int searchSpace = 0;
             
-            while (queue.Count > 0)
+            while (!queue.IsEmpty())
             {
                 searchSpace++;
 
@@ -729,56 +738,37 @@ namespace PathfindingTutorial.Data_Structures
 
                 if (tot_minor_vertices == checkMinor.TotalVertices && front.minor.TotalEdges == checkMinor.TotalEdges)
                 {
-                    var degreeSeqMinor = front.minor.GetDegreeSequence();
 
-                    int degreesEquivalent = 0;
+                    //the graphs have the same size and order, so check for isomorphism.
 
-                    for (int i = 0; i < tot_minor_vertices; i++)
-                        //otherwise count the number of degrees that are equivalent
-                        if (degreeSeqCheck[i] == degreeSeqMinor[i])
-                            degreesEquivalent++;
+                    Console.WriteLine("Found a valid minor with same size and order. Checking for isomorphism.");
 
-                    if (degreesEquivalent == tot_minor_vertices)
+                    var isom = CheckGraphIsomorphism(checkMinor, front.minor);
+
+                    if (!isom)
+                        continue;
+
+                    Console.WriteLine("Minors are isomorphic ==> Valid Minor");
+
+                    var stk = new Stack<MinorFindingGraphSearch>(10);
+
+                    var backtracking = front;
+                    while (backtracking != null)
                     {
-                        //the graphs have the same degree sequence, so try for an isomorphism now...
-
-                        Console.WriteLine("Found a valid minor with same degree sequence... Checking for isomorphism with the given minor now");
-
-                        front.minor.GetAdjacencyMatrix(true);
-
-                        var isom = CheckGraphIsomorphism(checkMinor, front.minor);
-
-                        if (!isom)
-                        {
-                            continue;
-                        }
-
-                        Console.WriteLine("Minors are isomorphic ==> Valid Minor");
-
-                        //(assuming they are equivalent for now)...
-                        var stk = new Stack<minorFindingGraphSearch>(10);
-
-                        var backtracking = front;
-                        while (backtracking != null)
-                        {
-                            stk.Push(backtracking);
-                            backtracking = backtracking.parent;
-                        }
-
-                        while (stk.Count > 0)
-                        {
-                            var top = stk.Pop();
-
-                            Console.WriteLine(top.action);
-
-                            Console.WriteLine("-------------------------");
-
-                            top.minor.PrintAdjacencyMatrix();
-
-                        }
-
-                        return true;
+                        stk.Push(backtracking);
+                        backtracking = backtracking.parent;
                     }
+
+                    while (stk.Count > 0)
+                    {
+                        var top = stk.Pop();
+                        Console.WriteLine(top.action);
+                        Console.WriteLine("-------------------------");
+                        top.minor.PrintAdjacencyMatrix();
+                    }
+                    Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, 1);
+
+                    return true; 
                 }
   
                 //do not spawn more minors if the edge difference is already met
@@ -798,9 +788,9 @@ namespace PathfindingTutorial.Data_Structures
                             var vertex = new_minor.graphStructure[i];
                             new_minor.RemoveNode(vertex, true);
 
-                            var vertex_removed_str = string.Format("Removed Node {0}", i);
+                            var vertex_removed_str = string.Format("Removed Node {0}", front.minor.graphStructure[i].GetValue());
 
-                            queue.Enqueue(new minorFindingGraphSearch(new_minor, front, vertex_removed_str));
+                            queue.Enqueue(new MinorFindingGraphSearch(new_minor, front, vertex_removed_str));
                         }
                     }
                 }
@@ -808,19 +798,18 @@ namespace PathfindingTutorial.Data_Structures
                 
                 if (front.minor.TotalEdges > checkMinor.TotalEdges)
                 {
-                    //try removing an edge
-
                     List<(int i, int j)> edgeList = front.minor.GetEdgeListUndirectedIJ();
 
                     foreach (var (i, j) in edgeList)
                     {
+                        //try removing an edge
                         var new_minor_edge_remove = front.minor.Clone();
 
                         new_minor_edge_remove.RemoveEdge(i, j);
 
-                        var edge_removed_str = string.Format("Removed Edge {0}-{1}", i, j);
+                        var edge_removed_str = string.Format("Removed Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
-                        queue.Enqueue(new minorFindingGraphSearch(new_minor_edge_remove, front, edge_removed_str));
+                        queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, edge_removed_str));
 
                         if (tot_minor_vertices > checkMinor.TotalVertices)
                         {
@@ -829,9 +818,9 @@ namespace PathfindingTutorial.Data_Structures
 
                             new_minor_contract.ContractEdge(i, j);
 
-                            var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", i, j);
+                            var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
-                            queue.Enqueue(new minorFindingGraphSearch(new_minor_contract, front, edge_contracted_str));
+                            queue.Enqueue(new MinorFindingGraphSearch(new_minor_contract, front, edge_contracted_str));
                         }
                     }
                 }
@@ -839,7 +828,7 @@ namespace PathfindingTutorial.Data_Structures
 
             }
 
-            Console.WriteLine(searchSpace);
+            Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, 1);
 
             //graph is not a valid minor
             return false;
@@ -849,7 +838,7 @@ namespace PathfindingTutorial.Data_Structures
         public void PrintAdjacencyMatrix(int[,] provided_adjMatrix = null)
         {
             var sb = new StringBuilder("   ");
-            var adjacencyMatrix = provided_adjMatrix ?? GetAdjacencyMatrix(false);
+            var adjacencyMatrix = provided_adjMatrix ?? GetAdjacencyMatrix(true);
 
             var totalVertices = adjacencyMatrix.GetLength(0);
 
@@ -859,7 +848,7 @@ namespace PathfindingTutorial.Data_Structures
             sb.AppendLine();
             for (int i = 0; i < totalVertices; i++)
             {
-                sb.Append(graphStructure[i].GetValue()).Append(':').Append(')');
+                sb.Append(graphStructure[i].GetValue()).Append(':').Append(' ');
                 for (int j = 0; j < totalVertices; j++)
                     sb.Append(adjacencyMatrix[i,j]).Append(' ');
                 sb.AppendLine();
@@ -912,7 +901,7 @@ namespace PathfindingTutorial.Data_Structures
             //keep node1
             var node1 = graphStructure[i];
 
-            var existingNeighbors = node1.GetNeighbors();
+            var existingNeighbors = new HashSet<IGraphNode<T>>(node1.GetNeighbors());
 
             var node2 = graphStructure[j];
 
@@ -930,8 +919,6 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             RemoveNode(node2);
-
-            GetAdjacencyMatrix(true);
         }
     }
 }
