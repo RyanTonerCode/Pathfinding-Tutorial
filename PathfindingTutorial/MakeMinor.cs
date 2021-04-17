@@ -9,6 +9,40 @@ namespace PathfindingTutorial
 
         private static void IsValidMinor()
         {
+            var adj1 = new int[5, 5];
+            adj1[0, 1] = 1;
+            adj1[0, 2] = 1;
+            adj1[3, 4] = 1;
+
+            var adj2 = new int[5, 5];
+            adj2[0, 1] = 1;
+            adj2[2, 3] = 1;
+            adj2[2, 4] = 1;
+
+            var g1 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj1);
+            var g2 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj2);
+
+            bool result = Graph<int>.CheckGraphIsomorphism(g1, g2);
+
+            /*
+            var graphsUpTo5 = Graph<int>.GenerateNonIsomorphicGraphsOfOrder(5);
+
+            Console.WriteLine(graphsUpTo5.Count);
+
+            int i = 0;
+            foreach (var graph in graphsUpTo5)
+            {
+                Console.WriteLine(i);
+                graph.PrintAdjacencyMatrix();
+                var deg = graph.GetDegreeSequence(false, true);
+                Console.WriteLine(string.Join(",", deg));
+                Console.WriteLine();
+                i++;
+            }
+            */
+
+            int break1 = 5;
+
             //var g = Graph<int>.GenerateGraphForDegreeSequence(new int[] { 5, 3, 3, 2, 2, 2, 1 });
 
             //g.PrintAdjacencyMatrix();

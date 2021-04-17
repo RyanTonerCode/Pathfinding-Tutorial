@@ -51,6 +51,75 @@ namespace PathfindingTutorial.Data_Structures
             return GenerateGraphForDegreeSequence(degreeSequence);
         }
 
+
+        public static Graph<int> EmptyGraph(int totalNodes)
+        {
+            var G = new Graph<int>(totalNodes);
+            for (int i = 0; i < totalNodes; i++)
+                G.AddNode(new GraphNode<int>(i));
+            return G;
+        }
+
+        public static List<Graph<int>> GenerateNonIsomorphicGraphsOfOrder(int n)
+        {
+            var nonIsomGraphs = new List<Graph<int>>();
+
+            var emptyGraph = EmptyGraph(n);
+
+            nonIsomGraphs.Add(emptyGraph);
+
+            var generationQueue = new Queue<Graph<int>>(n * n);
+            generationQueue.Enqueue(emptyGraph);
+
+            while (!generationQueue.IsEmpty())
+            {
+                var front = generationQueue.Dequeue();
+
+                front.GetAdjacencyMatrix(true);
+                front.GetDegreeSequence(true, true);
+
+                //try adding an edge...
+                for(int i = 0; i < n; i++)
+                {
+                    var node1 = front.graphStructure[i];
+                    //find a missing edge
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        var node2 = front.graphStructure[j];
+                        if (!node1.GetNeighbors().Contains(node2)){
+                            //spawn a clone 
+                            var clone = front.Clone();
+
+                            IGraphNode<int>.AddMutualNeighbor(clone.graphStructure[i], clone.graphStructure[j]);
+                            clone.TotalEdges++;
+
+                            clone.GetAdjacencyMatrix(true);
+                            clone.GetDegreeSequence(true, true);
+
+                            bool graph_already_generated = false;
+
+                            foreach(var existing_graph in nonIsomGraphs)
+                            {
+                                if (Graph<int>.CheckGraphIsomorphism(clone, existing_graph))
+                                {
+                                    graph_already_generated = true;
+                                    break;
+                                }
+                            }
+
+                            if (!graph_already_generated)
+                            {
+                                nonIsomGraphs.Add(clone);
+                                generationQueue.Enqueue(clone);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return nonIsomGraphs;
+        }
+
         /// <summary>
         /// Generate a graph that matches the given degree sequence. Returns null if unable to actualize.
         /// </summary>
@@ -113,48 +182,35 @@ namespace PathfindingTutorial.Data_Structures
         // Generating permutation using Heap Algorithm
         private static void heapPermutations(int[] a, int size, int n, List<int[]> permutations)
         {
-            var stk = new Stack<(int[] a, int size, int n)>();
-
-            stk.Add((a, size, n));
-
-            while (stk.Count > 0)
+            if (size == 1)
             {
-                var (a1, size1, n1) = stk.Pop();
+                permutations.Add((int[])a.Clone());
+                return;
+            }
 
-                if (size1 == 1)
-                {
-                    permutations.Add(a1);
-                    continue;
-                }
+            int decrementSize = size - 1;
 
-                for (int i = 0; i < size1; i++)
-                {
-                    stk.Add((a1, size1 - 1, n1));
+            heapPermutations(a, decrementSize, n, permutations);
 
-                    a1 = (int[])a1.Clone();
+            for (int i = 0; i < decrementSize; i++)
+            {
+                if (size % 2 == 0)
+                    swap(i, decrementSize, ref a);
+                else
+                    swap(0, decrementSize, ref a);
 
-                    // if size is odd, swap 0th i.e (first) and
-                    // (size-1)th i.e (last) element
-                    if (size1 % 2 == 1)
-                    {
-                        int temp = a1[0];
-                        a1[0] = a1[size1 - 1];
-                        a1[size1 - 1] = temp;
-                    }
+                heapPermutations(a, decrementSize, n, permutations);
+            }
 
-                    // If size is even, swap ith and
-                    // (size-1)th i.e (last) element
-                    else
-                    {
-                        int temp = a1[i];
-                        a1[i] = a1[size1 - 1];
-                        a1[size1 - 1] = temp;
-                    }
-                }
-
+            static void swap(int index1, int index2, ref int[] a)
+            {
+                int temp = a[index1];
+                a[index1] = a[index2];
+                a[index2] = temp;
             }
         }
 
+    
         public static bool CheckGraphIsomorphism(Graph<T> g1, Graph<T> g2)
         {
             Console.WriteLine("STARTING GRAPH ISOMORPHISM CHECK");
@@ -202,8 +258,8 @@ namespace PathfindingTutorial.Data_Structures
             //check permutations here...
 
             //map each possible degree in g1 to a list of vertices with that degree
-            var g1_degreeMap = new Dictionary<int, List<int>>();
-            var g2_degreeMap = new Dictionary<int, List<int>>();
+            var g1_degreeMap = new Dictionary<int, List<int>>(totalVertices);
+            var g2_degreeMap = new Dictionary<int, List<int>>(totalVertices);
 
             for (int i = 0; i < totalVertices; i++)
             {
@@ -221,7 +277,7 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             //map vertices in g1 (keys) to exact matches in g2 for isomorphism (because they have a unique degree)
-            var mapG1VerticesToG2Vertices = new Dictionary<int, int>();
+            var mapG1VerticesToG2Vertices = new Dictionary<int, int>(totalVertices);
 
             var permsFromG1ToG2 = new Dictionary<List<int>, List<int[]>>();
 

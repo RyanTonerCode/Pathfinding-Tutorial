@@ -46,7 +46,7 @@ namespace PathfindingTutorial.Data_Structures
             AdjacencyMatrix = new int[graphStructure.Count, graphStructure.Count];
 
             //associate each node to a unique integer
-            var nodeMap = new Dictionary<IGraphNode<T>, int>();
+            var nodeMap = new Dictionary<IGraphNode<T>, int>(graphStructure.Count);
 
             for (int i = 0; i < graphStructure.Count; i++)
                 nodeMap.Add(graphStructure[i], i);
@@ -157,6 +157,11 @@ namespace PathfindingTutorial.Data_Structures
         /// The number of nodes processed by the last search performed on this graph.
         /// </summary>
         public int LastSearchSpace { get; private set; }
+
+        public Graph(int totalNodes)
+        {
+            graphStructure = new(totalNodes);
+        }
 
         public Graph(params IGraphNode<T>[] nodes)
         {
