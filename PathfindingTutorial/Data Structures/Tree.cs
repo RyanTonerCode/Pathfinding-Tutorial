@@ -55,7 +55,7 @@ namespace PathfindingTutorial.Data_Structures
                     var neighborList = node.GetNeighbors();
                     if (neighborList.Count == 1)
                     {
-                        var onlyNeighbor = neighborList[0];
+                        var onlyNeighbor = neighborList.GetEnumerator().Current;
                         //remove the leaf node from the neighbor's list
                         onlyNeighbor.RemoveNeighbor(node);
                         //add the value of the leaf's only neighbor to the prufer sequence

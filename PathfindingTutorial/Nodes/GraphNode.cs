@@ -5,7 +5,7 @@ namespace PathfindingTutorial.Data_Structures
     public class GraphNode<T> : IGraphNode<T>
     {
         protected T value = default;
-        protected readonly List<IGraphNode<T>> neighbors = new(10);
+        protected readonly HashSet<IGraphNode<T>> neighbors;
 
         public bool Marked = false;
 
@@ -14,9 +14,28 @@ namespace PathfindingTutorial.Data_Structures
         public GraphNode(T value)
         {
             this.value = value;
+            neighbors = new(10);
         }
 
-        public virtual List<IGraphNode<T>> GetNeighbors()
+        public GraphNode(T value, int degree)
+        {
+            this.value = value;
+            neighbors = new(degree);
+        }
+
+        public static void AddMutualNeighbor(IGraphNode<T> a, IGraphNode<T> b)
+        {
+            a.AddNeighbor(b);
+            b.AddNeighbor(a);
+        }
+
+        public static void RemoveMutualNeighbor(IGraphNode<T> a, IGraphNode<T> b)
+        {
+            a.RemoveNeighbor(b);
+            b.RemoveNeighbor(a);
+        }
+
+        public virtual HashSet<IGraphNode<T>> GetNeighbors()
         {
             return neighbors;
         }
@@ -48,8 +67,13 @@ namespace PathfindingTutorial.Data_Structures
 
         public IGraphNode<T> Clone()
         {
-            var cln = new GraphNode<T>(value);
+            var cln = new GraphNode<T>(value, GetDegree());
             return cln;
+        }
+
+        public override int GetHashCode()
+        {
+            return value.GetHashCode();
         }
 
         public int GetDegree() => neighbors.Count;

@@ -32,7 +32,7 @@ namespace PathfindingTutorial
 
             Graph<int> MST = G.PrimsAlgorithmForMST();
 
-            MST.PrintEdgesUndirected();
+            MST.PrintEdges();
 
         }
     }

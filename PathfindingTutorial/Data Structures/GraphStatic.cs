@@ -9,24 +9,28 @@ namespace PathfindingTutorial.Data_Structures
     {
 
         #region Adjacency Matrix
-        public static Graph<int> GenerateGraphForAdjacencyMatrix(int[,] adjacencyMatrix, bool undirected = false)
+        /// <summary>
+        /// Generate graph assuming a simple, undirected, and symmetric adjacency matrix
+        /// </summary>
+        /// <param name="adjacencyMatrix"></param>
+        /// <returns></returns>
+        public static Graph<int> GenerateGraphForAdjacencyMatrix(int[,] adjacencyMatrix)
         {
             int length = adjacencyMatrix.GetLength(0);
 
             var G = new Graph<int>();
 
+            int maxDegree = adjacencyMatrix.GetLength(0) - 1;
+
             for (int i = 0; i < length; i++)
-                G.AddNode(new GraphNode<int>(i));
+                G.AddNode(new GraphNode<int>(i, maxDegree));
 
             for (int i = 0; i < length; i++)
                 for (int j = 0; j < length; j++)
                     if (adjacencyMatrix[i, j] != 0)
                     {
                         G.TotalEdges++;
-                        if (undirected)
-                            IGraphNode<int>.AddMutualNeighbor(G.graphStructure[i], G.graphStructure[j]);
-                        else
-                            G.graphStructure[i].AddNeighbor(G.graphStructure[j]);
+                        IGraphNode<int>.AddMutualNeighbor(G.graphStructure[i], G.graphStructure[j]);
                     }
 
             return G;
@@ -190,7 +194,7 @@ namespace PathfindingTutorial.Data_Structures
                 return true;
             }
             else
-                Console.WriteLine("Adjacency matrices are distinct");
+                Console.WriteLine("Adjacency Matrices are distinct");
 
             //check eigenvalues here...
 

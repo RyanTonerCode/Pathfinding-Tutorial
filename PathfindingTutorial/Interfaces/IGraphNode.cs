@@ -8,7 +8,7 @@ namespace PathfindingTutorial.Data_Structures
 
         public T GetValue();
 
-        public List<IGraphNode<T>> GetNeighbors();
+        public HashSet<IGraphNode<T>> GetNeighbors();
 
         public int GetDegree();
 

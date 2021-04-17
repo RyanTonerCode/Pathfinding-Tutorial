@@ -12,7 +12,6 @@ namespace PathfindingTutorial.Data_Structures
 
         public List<int> DegreeSequence { get; private set; }
 
-
         public int TotalVertices { get; private set; }
         public int TotalEdges { get; private set; }
 
@@ -112,23 +111,7 @@ namespace PathfindingTutorial.Data_Structures
             return edges;
         }
 
-        public List<Edge<T>> GetEdgeList()
-        {
-            var edges = new List<Edge<T>>();
-
-            foreach (var node in graphStructure)
-                foreach (var neighbor in node.GetNeighbors())
-                {
-                    if (node is WeightedGraphNode<T> wgn)
-                        edges.Add(new Edge<T>(node, neighbor, wgn.EdgeWeights[neighbor]));
-                    else
-                        edges.Add(new Edge<T>(node, neighbor));
-                }
-
-            return edges;
-        }
-
-        public List<Edge<T>> GetEdgeListUndirected()
+        public virtual List<Edge<T>> GetEdgeList()
         {
             var edges = new List<Edge<T>>();
 
@@ -153,9 +136,9 @@ namespace PathfindingTutorial.Data_Structures
             return edges;
         }
 
-        public List<(int, int)> GetEdgeListUndirectedIJ()
+        public List<(int i, int j)> GetEdgeListIJPairs()
         {
-            var edges = new List<(int, int)>(TotalEdges);
+            var edges = new List<(int i, int j)>(TotalEdges);
 
             var adjacencyMatrix = GetAdjacencyMatrix(true);
 
@@ -555,7 +538,7 @@ namespace PathfindingTutorial.Data_Structures
             var vertexMap = new Dictionary<IGraphNode<T>, WeightedGraphNode<T>>(graphStructure.Count);
 
             //obtain sorted edge list for G
-            var sortedEdgeList = GetEdgeListUndirected();
+            var sortedEdgeList = GetEdgeList();
 
            var MSF = new Graph<T>();
 
@@ -698,30 +681,26 @@ namespace PathfindingTutorial.Data_Structures
                 return false;
 
             //clone the minor
-            Graph<T> my_clone = Clone();   
+            Graph<T> my_clone = Clone();
 
             //Get adjacency matrices for both graphs
 
             var adjMatrixMinor = checkMinor.GetAdjacencyMatrix(true);
-
-            Console.WriteLine("\n***Adjacency Matrix of Original***\n");
-            PrintAdjacencyMatrix(GetAdjacencyMatrix(true));
-            Console.WriteLine("\n*******************************\n");
-
-            Console.WriteLine("\n***Adjacency Matrix of Candidate Minor***\n");
-            PrintAdjacencyMatrix(adjMatrixMinor);
-            Console.WriteLine("\n*******************************\n");
 
             var degreeSeqGraph = GetDegreeSequence(false, true);
 
             //Get the degree sequence of the minor
             var degreeSeqCheck = checkMinor.GetDegreeSequence(false, true);
 
-            Console.WriteLine("Degree Sequence of the Original: " + string.Join(",", degreeSeqGraph));
-            Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqCheck));
-            Console.WriteLine();
+            Console.WriteLine("***Adjacency Matrix of Original***\n");
+            PrintAdjacencyMatrix(GetAdjacencyMatrix(true));
+            Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqGraph));
+            Console.WriteLine("\n*******************************\n");
 
-            int theoreticalGenerationCutoff = (TotalVertices - checkMinor.TotalVertices + TotalEdges - checkMinor.TotalEdges);
+            Console.WriteLine("***Adjacency Matrix of Candidate Minor***\n");
+            PrintAdjacencyMatrix(adjMatrixMinor);
+            Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqCheck));
+            Console.WriteLine("\n*******************************\n");
 
             //queue references adjacency matrix to an int of the number of edges removes
             var queue = new Heap<MinorFindingGraphSearch>(1000000);
@@ -731,26 +710,25 @@ namespace PathfindingTutorial.Data_Structures
             queue.Enqueue(start);
 
             int searchSpace = 0;
-            
+
             while (!queue.IsEmpty())
             {
                 searchSpace++;
 
                 var front = queue.Dequeue();
 
-                Console.WriteLine(front.generationNumber);
-
-                //if (front.generationNumber > theoreticalGenerationCutoff)
-                //    continue;
-
                 var tot_minor_vertices = front.minor.TotalVertices;
+
+                //do not spawn more minors if the edge difference is already met
+                if (tot_minor_vertices < checkMinor.TotalVertices && front.minor.TotalEdges < checkMinor.TotalEdges)
+                    continue;
 
                 if (tot_minor_vertices == checkMinor.TotalVertices && front.minor.TotalEdges == checkMinor.TotalEdges)
                 {
 
                     //the graphs have the same size and order, so check for isomorphism.
 
-                    Console.WriteLine("Found a valid minor with same size and order. Checking for isomorphism.");
+                    Console.WriteLine("Found a valid minor of same size and order...");
 
                     var isom = CheckGraphIsomorphism(checkMinor, front.minor);
 
@@ -771,20 +749,17 @@ namespace PathfindingTutorial.Data_Structures
                     while (stk.Count > 0)
                     {
                         var top = stk.Pop();
-                        Console.WriteLine("Generation {0}: {1}", top.generationNumber, top.action);
                         Console.WriteLine("-------------------------");
+                        Console.WriteLine("Generation {0}: {1}", top.generationNumber, top.action);
                         top.minor.PrintAdjacencyMatrix();
                     }
-                    Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, queue.Count);
+                    PrintSearchStatistics(queue, searchSpace);
 
-                    //return true; 
+                    //return true;
                 }
-  
-                //do not spawn more minors if the edge difference is already met
-                if (tot_minor_vertices < checkMinor.TotalVertices && front.minor.TotalEdges < checkMinor.TotalEdges)
-                    continue;
 
-                if (tot_minor_vertices > checkMinor.TotalVertices) {
+                if (tot_minor_vertices > checkMinor.TotalVertices)
+                {
                     //try removing a vertex...
                     for (int i = 0; i < front.minor.TotalVertices; i++)
                     {
@@ -804,10 +779,10 @@ namespace PathfindingTutorial.Data_Structures
                     }
                 }
 
-                
+
                 if (front.minor.TotalEdges > checkMinor.TotalEdges)
                 {
-                    List<(int i, int j)> edgeList = front.minor.GetEdgeListUndirectedIJ();
+                    var edgeList = front.minor.GetEdgeListIJPairs();
 
                     foreach (var (i, j) in edgeList)
                     {
@@ -841,12 +816,15 @@ namespace PathfindingTutorial.Data_Structures
 
             }
 
-            Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, queue.Count);
+            PrintSearchStatistics(queue, searchSpace);
 
             //graph is not a valid minor
             return false;
+
+            static void PrintSearchStatistics(Heap<MinorFindingGraphSearch> queue, int searchSpace) =>
+                Console.WriteLine("\nSearch Space: {0} minors processed with {1} minors remaining in queue", searchSpace, queue.Count);
         }
-        
+
 
         public void PrintAdjacencyMatrix(int[,] provided_adjMatrix = null)
         {
@@ -883,17 +861,9 @@ namespace PathfindingTutorial.Data_Structures
                 Console.WriteLine(edge);
         }
 
-        public void PrintEdgesUndirected()
-        {
-            var edges = GetEdgeListUndirected();
-
-            foreach(var edge in edges)
-                Console.WriteLine(edge);
-        }
-
         public int GetOrder() => graphStructure.Count;
 
-        public int GetSize() => GetEdgeListUndirected().Count;
+        public int GetSize() => GetEdgeList().Count;
 
         public void RemoveEdge(int i, int j, bool directed = false)
         {
@@ -914,10 +884,11 @@ namespace PathfindingTutorial.Data_Structures
             //keep node1
             var node1 = graphStructure[i];
 
-            var existingNeighbors = new HashSet<IGraphNode<T>>(node1.GetNeighbors());
+            var existingNeighbors = node1.GetNeighbors();
 
             var node2 = graphStructure[j];
 
+            //remove the edge between i and j
             IGraphNode<T>.RemoveMutualNeighbor(node1, node2);
 
             foreach (var neighbor in node2.GetNeighbors())

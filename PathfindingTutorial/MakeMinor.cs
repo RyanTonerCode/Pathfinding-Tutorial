@@ -13,8 +13,6 @@ namespace PathfindingTutorial
 
             //g.PrintAdjacencyMatrix();
 
-            bool undirected = true;
-
             /*
             //EXAMPLE 1
             var graphAdjacency = new int[6, 6];
@@ -81,10 +79,10 @@ namespace PathfindingTutorial
             minorAdjacency[0, 3] = 1;
             minorAdjacency[1, 2] = 1;
             minorAdjacency[1, 3] = 1;
-            minorAdjacency[2, 3] = 1;
+            //minorAdjacency[2, 3] = 1;
 
 
-            var G = Graph<int>.GenerateCompleteGraph(7);
+            var G = Graph<int>.GenerateCompleteGraph(6);
             G.RemoveEdge(0, 1);
             G.RemoveEdge(0, 2);
             G.RemoveEdge(0, 3);
@@ -93,12 +91,8 @@ namespace PathfindingTutorial
             G.RemoveEdge(2, 4);
             G.RemoveEdge(3, 5);
             G.RemoveEdge(4, 5);
-            G.RemoveEdge(4, 6);
-            G.RemoveEdge(5, 6);
 
-
-
-            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency, undirected);
+            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency);
 
             G.IsValidMinor(M);
         }

@@ -36,7 +36,7 @@ namespace PathfindingTutorial
                 var tree = Tree<int>.PruferEncodingToTree(prufer);
 
                 Console.WriteLine("TREE WITH PRUFER CODE");
-                tree.PrintEdgesUndirected();
+                tree.PrintEdges();
 
                 var reversePrufer = Tree<int>.GeneratePruferEncodingForTree(tree);
 
