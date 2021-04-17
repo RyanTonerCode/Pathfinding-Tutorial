@@ -16,6 +16,41 @@ namespace PathfindingTutorial
             var f1 = new GraphNode<int>(6);
 
             IGraphNode<int>.AddMutualNeighbor(a1, b1);
+            IGraphNode<int>.AddMutualNeighbor(b1, c1);
+            IGraphNode<int>.AddMutualNeighbor(b1, d1);
+            IGraphNode<int>.AddMutualNeighbor(c1, d1);
+            IGraphNode<int>.AddMutualNeighbor(d1, e1);
+            IGraphNode<int>.AddMutualNeighbor(e1, f1);
+
+            var G1 = new Graph<int>(a1, b1, c1, d1, e1, f1);
+
+            var a2 = new GraphNode<int>(1);
+            var b2 = new GraphNode<int>(2);
+            var c2 = new GraphNode<int>(3);
+            var d2 = new GraphNode<int>(4);
+            var e2 = new GraphNode<int>(5);
+            var f2 = new GraphNode<int>(6);
+
+            IGraphNode<int>.AddMutualNeighbor(a2, b2);
+            IGraphNode<int>.AddMutualNeighbor(b2, c2);
+            IGraphNode<int>.AddMutualNeighbor(c2, d2);
+            IGraphNode<int>.AddMutualNeighbor(c2, d2);
+            IGraphNode<int>.AddMutualNeighbor(d2, e2);
+            IGraphNode<int>.AddMutualNeighbor(e2, f2);
+
+            var G2 = new Graph<int>(a2, b2, c2, d2, e2, f2);
+
+            Graph<int>.CheckGraphIsomorphism(G1, G2);
+
+            /*
+            var a1 = new GraphNode<int>(1);
+            var b1 = new GraphNode<int>(2);
+            var c1 = new GraphNode<int>(3);
+            var d1 = new GraphNode<int>(4);
+            var e1 = new GraphNode<int>(5);
+            var f1 = new GraphNode<int>(6);
+
+            IGraphNode<int>.AddMutualNeighbor(a1, b1);
             IGraphNode<int>.AddMutualNeighbor(b1, f1);
             IGraphNode<int>.AddMutualNeighbor(b1, c1);
             IGraphNode<int>.AddMutualNeighbor(c1, d1);
@@ -83,7 +118,7 @@ namespace PathfindingTutorial
             var G6 = Graph<int>.GenerateGraphForAdjacencyMatrix(g6_adj, true);
 
             Graph<int>.CheckGraphIsomorphism(G5, G6);
-
+            */
         }
     }
 }

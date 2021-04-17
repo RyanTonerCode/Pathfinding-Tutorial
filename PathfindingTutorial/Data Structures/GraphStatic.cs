@@ -362,9 +362,14 @@ namespace PathfindingTutorial.Data_Structures
 
                 Console.WriteLine("Permutation\n{0}\n{1}", perm_str_g1, perm_str_g2);
 
-                var result = P * G1 * P.GetInverseMatrix();
+                //G2= P * G1 * P^-1
+                //G2*P = P * G1
+                //var result = P * G1 * P.GetInverseMatrix();
 
-                if (G2.Equals(result))
+                var G2P = G2 * P;
+                var PG1 = P * G1;
+
+                if (G2P.Equals(PG1))
                 {
                     Console.WriteLine("\nIsomorphic!");
 
@@ -372,8 +377,10 @@ namespace PathfindingTutorial.Data_Structures
                     G1.Print();
                     Console.WriteLine("G2");
                     G2.Print();
-                    Console.WriteLine("PG1P^(-1)");
-                    result.Print();
+                    Console.WriteLine("PG1");
+                    PG1.Print();
+                    Console.WriteLine("G2P");
+                    G2P.Print();
 
                     Console.WriteLine("P");
                     P.Print();

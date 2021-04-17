@@ -671,11 +671,13 @@ namespace PathfindingTutorial.Data_Structures
             public Graph<T> minor;
             public MinorFindingGraphSearch parent;
             public string action;
+            public int generationNumber;
 
-            public MinorFindingGraphSearch(Graph<T> minor, MinorFindingGraphSearch parent, string action = "")
+            public MinorFindingGraphSearch(Graph<T> minor, MinorFindingGraphSearch parent, int generation, string action = "")
             {
                 this.minor = minor;
                 this.parent = parent;
+                this.generationNumber = generation;
                 this.action = action;
             }
 
@@ -719,10 +721,12 @@ namespace PathfindingTutorial.Data_Structures
             Console.WriteLine("Degree Sequence of the Possible Minor: " + string.Join(",", degreeSeqCheck));
             Console.WriteLine();
 
+            int theoreticalGenerationCutoff = (TotalVertices - checkMinor.TotalVertices + TotalEdges - checkMinor.TotalEdges);
+
             //queue references adjacency matrix to an int of the number of edges removes
             var queue = new Heap<MinorFindingGraphSearch>(1000000);
 
-            var start = new MinorFindingGraphSearch(my_clone, null);
+            var start = new MinorFindingGraphSearch(my_clone, null, 0);
 
             queue.Enqueue(start);
 
@@ -733,6 +737,11 @@ namespace PathfindingTutorial.Data_Structures
                 searchSpace++;
 
                 var front = queue.Dequeue();
+
+                Console.WriteLine(front.generationNumber);
+
+                //if (front.generationNumber > theoreticalGenerationCutoff)
+                //    continue;
 
                 var tot_minor_vertices = front.minor.TotalVertices;
 
@@ -762,13 +771,13 @@ namespace PathfindingTutorial.Data_Structures
                     while (stk.Count > 0)
                     {
                         var top = stk.Pop();
-                        Console.WriteLine(top.action);
+                        Console.WriteLine("Generation {0}: {1}", top.generationNumber, top.action);
                         Console.WriteLine("-------------------------");
                         top.minor.PrintAdjacencyMatrix();
                     }
-                    Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, 1);
+                    Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, queue.Count);
 
-                    return true; 
+                    //return true; 
                 }
   
                 //do not spawn more minors if the edge difference is already met
@@ -790,7 +799,7 @@ namespace PathfindingTutorial.Data_Structures
 
                             var vertex_removed_str = string.Format("Removed Node {0}", front.minor.graphStructure[i].GetValue());
 
-                            queue.Enqueue(new MinorFindingGraphSearch(new_minor, front, vertex_removed_str));
+                            queue.Enqueue(new MinorFindingGraphSearch(new_minor, front, front.generationNumber + 1, vertex_removed_str));
                         }
                     }
                 }
@@ -809,7 +818,7 @@ namespace PathfindingTutorial.Data_Structures
 
                         var edge_removed_str = string.Format("Removed Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
-                        queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, edge_removed_str));
+                        queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, front.generationNumber + 1, edge_removed_str));
 
                         if (tot_minor_vertices > checkMinor.TotalVertices)
                         {
@@ -818,9 +827,13 @@ namespace PathfindingTutorial.Data_Structures
 
                             new_minor_contract.ContractEdge(i, j);
 
+                            //skip bad contractions
+                            if (new_minor_contract.TotalEdges < checkMinor.TotalEdges)
+                                continue;
+
                             var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
-                            queue.Enqueue(new MinorFindingGraphSearch(new_minor_contract, front, edge_contracted_str));
+                            queue.Enqueue(new MinorFindingGraphSearch(new_minor_contract, front, front.generationNumber + 1, edge_contracted_str));
                         }
                     }
                 }
@@ -828,7 +841,7 @@ namespace PathfindingTutorial.Data_Structures
 
             }
 
-            Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, 1);
+            Console.WriteLine("Search Space: {0} minors analyzed with {1} remaining minors in queue", searchSpace, queue.Count);
 
             //graph is not a valid minor
             return false;

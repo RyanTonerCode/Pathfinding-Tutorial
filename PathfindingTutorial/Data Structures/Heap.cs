@@ -11,6 +11,8 @@ namespace PathfindingTutorial.Data_Structures
         private int queue_capacity;         // index of last position in ArrayList
         private const int max_capacity = Program.MaxHeapSize;
 
+        public int Count { get; private set; }
+
         public Heap(int capacity)
         {
             if (capacity > max_capacity)
@@ -72,6 +74,7 @@ namespace PathfindingTutorial.Data_Structures
                 lastIndex++;
                 heapData.Insert(lastIndex, element);
                 reheapUp(element);
+                Count++;
             }
         }
 
@@ -127,6 +130,7 @@ namespace PathfindingTutorial.Data_Structures
           lastIndex--;                         // decrease priority queue size
           if (lastIndex != -1)
              reheapDown(toMove);               // restore heap properties
+          Count--;
           return hold;                         // return largest element
         }
       }
