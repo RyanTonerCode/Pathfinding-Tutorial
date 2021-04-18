@@ -191,6 +191,12 @@ namespace PathfindingTutorial.Data_Structures
             TotalVertices++;
         }
 
+        public void AddEdge(int i, int j)
+        {
+            IGraphNode<T>.AddMutualNeighbor(graphStructure[i], graphStructure[j]);
+            TotalEdges++;
+        }
+
         public void RemoveNode(IGraphNode<T> Node, bool RemoveNeighbors=false)
         {
             graphStructure.Remove(Node);
@@ -760,7 +766,7 @@ namespace PathfindingTutorial.Data_Structures
                     }
                     PrintSearchStatistics(queue, searchSpace);
 
-                    //return true;
+                    return true;
                 }
 
                 if (tot_minor_vertices > checkMinor.TotalVertices)
@@ -850,6 +856,27 @@ namespace PathfindingTutorial.Data_Structures
                 sb.AppendLine();
             }
             Console.Write(sb);
+        }
+
+        public string GetGraphStoreFormat()
+        {
+            //undirected graph
+            var sb = new StringBuilder("ug");
+
+            var adjacencyMatrix = GetAdjacencyMatrix(true);
+
+            var totalVertices = adjacencyMatrix.GetLength(0);
+
+            //total number of vertices
+            sb.Append(totalVertices);
+
+            sb.Append(':');
+
+            for (int i = 0; i < totalVertices; i++)
+                for (int j = 0; j < totalVertices; j++)
+                    sb.Append(adjacencyMatrix[i,j]);
+
+            return sb.ToString();
         }
 
         public void PrintNodes()

@@ -22,7 +22,8 @@ namespace PathfindingTutorial
             PRUFER_TO_TREE,
             DEGREE_SEQUENCE_CONSTRUCTOR,
             IS_VALID_MINOR,
-            ISOMORPHISM
+            ISOMORPHISM,
+            MAKE_GRAPHS
         };
 
         static void Main(string[] args)
@@ -84,6 +85,10 @@ namespace PathfindingTutorial
 
                 case SUBPROGRAM.ISOMORPHISM:
                     IsIsomorphic();
+                    break;
+
+                case SUBPROGRAM.MAKE_GRAPHS:
+                    MakeGraphsOrderN(6);
                     break;
             }
 
