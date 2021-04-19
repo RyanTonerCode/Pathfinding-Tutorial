@@ -88,7 +88,7 @@ namespace PathfindingTutorial
                     break;
 
                 case SUBPROGRAM.MAKE_GRAPHS:
-                    MakeGraphsOrderN(6);
+                    MakeNonIsomorphicGraphsOfOrderN(7);
                     break;
             }
 

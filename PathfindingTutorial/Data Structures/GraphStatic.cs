@@ -51,6 +51,21 @@ namespace PathfindingTutorial.Data_Structures
             return GenerateGraphForDegreeSequence(degreeSequence);
         }
 
+        public static Graph<int> GenerateCompleteBipartiteGraph(int n1, int n2)
+        {
+            int totalNodes = n1 + n2;
+            var G = new Graph<int>(totalNodes);
+
+            for (int i = 0; i < totalNodes; i++)
+                G.AddNode(new GraphNode<int>(i));
+
+            for (int i = 0; i < n1; i++)
+                for (int j = 0; j < n2; j++)
+                    IGraphNode<int>.AddMutualNeighbor(G.graphStructure[i], G.graphStructure[n1 + j]);
+
+            return G;
+        }
+
 
         public static Graph<int> EmptyGraph(int totalNodes)
         {
@@ -60,30 +75,27 @@ namespace PathfindingTutorial.Data_Structures
             return G;
         }
 
-        public static List<Graph<int>> GenerateNonIsomorphicGraphsOfOrder(int n)
+        public static List<Graph<int>> GenerateNonIsomorphicGraphsOfOrder(int order)
         {
             var nonIsomGraphs = new List<Graph<int>>();
 
-            var emptyGraph = EmptyGraph(n);
+            var emptyGraph = EmptyGraph(order);
 
             nonIsomGraphs.Add(emptyGraph);
 
-            var generationQueue = new Queue<Graph<int>>(n * n);
+            var generationQueue = new Queue<Graph<int>>(order^(order-1));
             generationQueue.Enqueue(emptyGraph);
 
             while (!generationQueue.IsEmpty())
             {
                 var front = generationQueue.Dequeue();
 
-                front.GetAdjacencyMatrix(true);
-                front.GetDegreeSequence(true, true);
-
                 //try adding an edge...
-                for(int i = 0; i < n; i++)
+                for (int i = 0; i < order; i++)
                 {
                     var node1 = front.graphStructure[i];
                     //find a missing edge
-                    for (int j = i + 1; j < n; j++)
+                    for (int j = i + 1; j < order; j++)
                     {
                         var node2 = front.graphStructure[j];
                         if (!node1.GetNeighbors().Contains(node2)){
@@ -93,19 +105,14 @@ namespace PathfindingTutorial.Data_Structures
                             IGraphNode<int>.AddMutualNeighbor(clone.graphStructure[i], clone.graphStructure[j]);
                             clone.TotalEdges++;
 
-                            clone.GetAdjacencyMatrix(true);
-                            clone.GetDegreeSequence(true, true);
-
                             bool graph_already_generated = false;
 
                             foreach(var existing_graph in nonIsomGraphs)
-                            {
                                 if (Graph<int>.CheckGraphIsomorphism(clone, existing_graph))
                                 {
                                     graph_already_generated = true;
                                     break;
                                 }
-                            }
 
                             if (!graph_already_generated)
                             {
@@ -211,9 +218,10 @@ namespace PathfindingTutorial.Data_Structures
         }
 
     
-        public static bool CheckGraphIsomorphism(Graph<T> g1, Graph<T> g2)
+        public static bool CheckGraphIsomorphism(Graph<T> g1, Graph<T> g2, bool print=false)
         {
-            Console.WriteLine("STARTING GRAPH ISOMORPHISM CHECK");
+            if(print)
+                Console.WriteLine("STARTING GRAPH ISOMORPHISM CHECK");
 
             //first look at the order and size
             if (g1.TotalVertices != g2.TotalVertices || g1.TotalEdges != g2.TotalEdges)
@@ -228,11 +236,13 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < totalVertices; i++)
                 if (g1_DegreeSeq[i] != g2_DegreeSeq[i])
                 {
-                    Console.WriteLine("Different degree sequence");
+                    if (print)
+                        Console.WriteLine("Different degree sequence");
                     return false;
                 }
 
-            Console.WriteLine("Degree sequences are identical");
+            if (print)
+                Console.WriteLine("Degree sequences are identical");
 
             var g1_adj = g1.GetAdjacencyMatrix(false);
             var g2_adj = g2.GetAdjacencyMatrix(false);
@@ -246,10 +256,11 @@ namespace PathfindingTutorial.Data_Structures
 
             if (adjEqualCount == totalVertices * totalVertices)
             {
-                Console.WriteLine("Identical Adjacency Matrices");
+                if (print)
+                    Console.WriteLine("Identical Adjacency Matrices");
                 return true;
             }
-            else
+            else if(print)
                 Console.WriteLine("Adjacency Matrices are distinct");
 
             //check eigenvalues here...
@@ -291,7 +302,8 @@ namespace PathfindingTutorial.Data_Structures
 
                     //map these nodes
                     mapG1VerticesToG2Vertices[g1_singleVertex] = g2_singleVertex;
-                    Console.WriteLine("Mapping g1 Vertex {0} to g2 Vertex {1} due to unique degree {2}", g1_singleVertex, g2_singleVertex, degree);
+                    if (print)
+                        Console.WriteLine("Mapping g1 Vertex {0} to g2 Vertex {1} due to unique degree {2}", g1_singleVertex, g2_singleVertex, degree);
                 }
                 else
                 {
@@ -306,15 +318,18 @@ namespace PathfindingTutorial.Data_Structures
                     {
                         g1_sb.Append(g1_degreeMap[degree][i]);
                         g2_sb.Append(g2_degreeMap[degree][i]);
-                        if (i < g1_degreeMap[degree].Count - 1)
+                        if (print && i < g1_degreeMap[degree].Count - 1)
                         {
                             g1_sb.Append(',');
                             g2_sb.Append(',');
                         }
                     }
 
-                    Console.WriteLine("G1 vertices of degree {0}: ({1})", degree, g1_sb);
-                    Console.WriteLine("G2 vertices of degree {0}: ({1})", degree, g2_sb);
+                    if (print)
+                    {
+                        Console.WriteLine("G1 vertices of degree {0}: ({1})", degree, g1_sb);
+                        Console.WriteLine("G2 vertices of degree {0}: ({1})", degree, g2_sb);
+                    }
 
 
                     permsFromG1ToG2.Add(g1_node_list, perms);
@@ -402,8 +417,11 @@ namespace PathfindingTutorial.Data_Structures
 
                     var perm_value = permsFromG1ToG2[perm_key][perm_index];
 
-                    perm_str_g1.Append('(');
-                    perm_str_g2.Append('(');
+                    if (print)
+                    {
+                        perm_str_g1.Append('(');
+                        perm_str_g2.Append('(');
+                    }
 
                     for (int i = 0; i < perm_key.Count; i++) {
 
@@ -411,16 +429,22 @@ namespace PathfindingTutorial.Data_Structures
                         int vertexInG2 = perm_value[i];
                         P[vertexInG2, vertexInG1] = 1;
 
-                        perm_str_g1.Append(vertexInG1);
-                        perm_str_g2.Append(vertexInG2);
+                        if (print)
+                        {
+                            perm_str_g1.Append(vertexInG1);
+                            perm_str_g2.Append(vertexInG2);
+                        }
 
                     }
-                    perm_str_g1.Append(')');
-                    perm_str_g2.Append(')');
+                    if (print)
+                    {
+                        perm_str_g1.Append(')');
+                        perm_str_g2.Append(')');
+                    }
 
                 }
-
-                Console.WriteLine("Permutation\n{0}\n{1}", perm_str_g1, perm_str_g2);
+                if (print)
+                    Console.WriteLine("Permutation\n{0}\n{1}", perm_str_g1, perm_str_g2);
 
                 //G2= P * G1 * P^-1
                 //G2*P = P * G1
@@ -431,31 +455,33 @@ namespace PathfindingTutorial.Data_Structures
 
                 if (G2P.Equals(PG1))
                 {
-                    Console.WriteLine("\nIsomorphic!");
+                    if (print)
+                    {
+                        Console.WriteLine("\nIsomorphic!");
+                        Console.WriteLine("G1");
+                        G1.Print();
+                        Console.WriteLine("G2");
+                        G2.Print();
+                        Console.WriteLine("PG1");
+                        PG1.Print();
+                        Console.WriteLine("G2P");
+                        G2P.Print();
+                        Console.WriteLine("P");
+                        P.Print();
 
-                    Console.WriteLine("G1");
-                    G1.Print();
-                    Console.WriteLine("G2");
-                    G2.Print();
-                    Console.WriteLine("PG1");
-                    PG1.Print();
-                    Console.WriteLine("G2P");
-                    G2P.Print();
-
-                    Console.WriteLine("P");
-                    P.Print();
-
-                    for (int i = 0; i < totalVertices; i++)
-                        for (int j = 0; j < totalVertices; j++)
-                            if(P[i,j] == 1)
-                                Console.WriteLine("Mapped g1 Vertex {0} to g2 Vertex {1}", i, j);
+                        for (int i = 0; i < totalVertices; i++)
+                            for (int j = 0; j < totalVertices; j++)
+                                if (P[i, j] == 1)
+                                    Console.WriteLine("Mapped g1 Vertex {0} to g2 Vertex {1}", i, j);
+                    }
 
                     return true;
                 }
 
             }
 
-            Console.WriteLine("Could not find an isomorphism, generated {0} permutation matrices", totalPermutationMatricesGenerated);
+            if(print)
+                Console.WriteLine("Could not find an isomorphism, generated {0} permutation matrices", totalPermutationMatricesGenerated);
 
             return false;
         }

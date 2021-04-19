@@ -686,7 +686,7 @@ namespace PathfindingTutorial.Data_Structures
         }
 
         
-        public bool IsValidMinor(Graph<T> checkMinor)
+        public bool IsValidMinor(Graph<T> checkMinor, bool print=false)
         {
             if (checkMinor.TotalVertices > TotalVertices || checkMinor.TotalEdges > TotalEdges)
                 return false;
@@ -703,15 +703,18 @@ namespace PathfindingTutorial.Data_Structures
             //Get the degree sequence of the minor
             var degreeSeqCheck = checkMinor.GetDegreeSequence(false, true);
 
-            Console.WriteLine("***Adjacency Matrix of Original***\n");
-            PrintAdjacencyMatrix(GetAdjacencyMatrix(true));
-            Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqGraph));
-            Console.WriteLine("\n*******************************\n");
+            if (print)
+            {
+                Console.WriteLine("***Adjacency Matrix of Original***\n");
+                PrintAdjacencyMatrix(GetAdjacencyMatrix(true));
+                Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqGraph));
+                Console.WriteLine("\n*******************************\n");
 
-            Console.WriteLine("***Adjacency Matrix of Candidate Minor***\n");
-            PrintAdjacencyMatrix(adjMatrixMinor);
-            Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqCheck));
-            Console.WriteLine("\n*******************************\n");
+                Console.WriteLine("***Adjacency Matrix of Candidate Minor***\n");
+                PrintAdjacencyMatrix(adjMatrixMinor);
+                Console.WriteLine("\nDegree Sequence: {0}", string.Join(",", degreeSeqCheck));
+                Console.WriteLine("\n*******************************\n");
+            }
 
             //queue references adjacency matrix to an int of the number of edges removes
             var queue = new Heap<MinorFindingGraphSearch>(1000000);
@@ -739,32 +742,36 @@ namespace PathfindingTutorial.Data_Structures
 
                     //the graphs have the same size and order, so check for isomorphism.
 
-                    Console.WriteLine("Found a valid minor of same size and order...");
+                    if(print)
+                        Console.WriteLine("Found a valid minor of same size and order...");
 
                     var isom = CheckGraphIsomorphism(checkMinor, front.minor);
 
                     if (!isom)
                         continue;
 
-                    Console.WriteLine("Minors are isomorphic ==> Valid Minor");
-
-                    var stk = new Stack<MinorFindingGraphSearch>(10);
-
-                    var backtracking = front;
-                    while (backtracking != null)
+                    if (print)
                     {
-                        stk.Push(backtracking);
-                        backtracking = backtracking.parent;
-                    }
+                        Console.WriteLine("Minors are isomorphic ==> Valid Minor");
 
-                    while (stk.Count > 0)
-                    {
-                        var top = stk.Pop();
-                        Console.WriteLine("-------------------------");
-                        Console.WriteLine("Generation {0}: {1}", top.generationNumber, top.action);
-                        top.minor.PrintAdjacencyMatrix();
+                        var stk = new Stack<MinorFindingGraphSearch>(10);
+
+                        var backtracking = front;
+                        while (backtracking != null)
+                        {
+                            stk.Push(backtracking);
+                            backtracking = backtracking.parent;
+                        }
+
+                        while (stk.Count > 0)
+                        {
+                            var top = stk.Pop();
+                            Console.WriteLine("-------------------------");
+                            Console.WriteLine("Generation {0}: {1}", top.generationNumber, top.action);
+                            top.minor.PrintAdjacencyMatrix();
+                        }
+                        PrintSearchStatistics(queue, searchSpace);
                     }
-                    PrintSearchStatistics(queue, searchSpace);
 
                     return true;
                 }
@@ -827,7 +834,8 @@ namespace PathfindingTutorial.Data_Structures
 
             }
 
-            PrintSearchStatistics(queue, searchSpace);
+            if(print)
+                PrintSearchStatistics(queue, searchSpace);
 
             //graph is not a valid minor
             return false;

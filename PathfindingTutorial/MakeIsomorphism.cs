@@ -119,6 +119,23 @@ namespace PathfindingTutorial
 
             Graph<int>.CheckGraphIsomorphism(G5, G6);
             */
+
+            /* THIS IS AN ISOM TEST
+            var adj1 = new int[5, 5];
+            adj1[0, 1] = 1;
+            adj1[0, 2] = 1;
+            adj1[3, 4] = 1;
+
+            var adj2 = new int[5, 5];
+            adj2[0, 1] = 1;
+            adj2[2, 3] = 1;
+            adj2[2, 4] = 1;
+
+            var g1 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj1);
+            var g2 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj2);
+
+            bool result = Graph<int>.CheckGraphIsomorphism(g1, g2);
+            */
         }
     }
 }

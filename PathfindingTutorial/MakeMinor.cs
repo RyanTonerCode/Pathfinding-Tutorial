@@ -1,8 +1,5 @@
 ﻿using PathfindingTutorial.Data_Structures;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace PathfindingTutorial
 {
@@ -11,113 +8,48 @@ namespace PathfindingTutorial
 
         private static void IsValidMinor()
         {
-            /* THIS IS AN ISOM TEST
-            var adj1 = new int[5, 5];
-            adj1[0, 1] = 1;
-            adj1[0, 2] = 1;
-            adj1[3, 4] = 1;
+            var K33 = Graph<int>.GenerateCompleteBipartiteGraph(3, 3);
+            K33.PrintAdjacencyMatrix();
 
-            var adj2 = new int[5, 5];
-            adj2[0, 1] = 1;
-            adj2[2, 3] = 1;
-            adj2[2, 4] = 1;
-
-            var g1 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj1);
-            var g2 = Graph<int>.GenerateGraphForAdjacencyMatrix(adj2);
-
-            bool result = Graph<int>.CheckGraphIsomorphism(g1, g2);
-            */
-
-            //var g = Graph<int>.GenerateGraphForDegreeSequence(new int[] { 5, 3, 3, 2, 2, 2, 1 });
-
-            //g.PrintAdjacencyMatrix();
-
-            /*
-            //EXAMPLE 1
-            var graphAdjacency = new int[6, 6];
-            graphAdjacency[0, 1] = 1;
-            graphAdjacency[0, 2] = 1;
-            graphAdjacency[0, 3] = 1;
-            graphAdjacency[1, 4] = 1;
-            graphAdjacency[1, 5] = 1;
-
-            var minorAdjacency = new int[5, 5];
-            minorAdjacency[0, 1] = 1;
-            minorAdjacency[0, 2] = 1;
-            minorAdjacency[0, 3] = 1;
-            minorAdjacency[0, 4] = 1;
-            */
-
-            /*
-            //EXAMPLE 2
-            var graphAdjacency = new int[5, 5];
-            var minorAdjacency = new int[4, 4];
-            graphAdjacency[0, 1] = 1;
-            graphAdjacency[0, 2] = 1;
-            graphAdjacency[1, 2] = 1;
-            graphAdjacency[1, 3] = 1;
-            graphAdjacency[1, 4] = 1;
-            graphAdjacency[2, 3] = 1;
-            graphAdjacency[3, 4] = 1;
-
-            minorAdjacency[0, 1] = 1;
-            minorAdjacency[1, 2] = 1;
-            minorAdjacency[1, 3] = 1;
-            //minorAdjacency[2, 3] = 1;
-
-            var G = Graph<int>.GenerateGraphForAdjacencyMatrix(graphAdjacency, undirected);
-            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency, undirected);
-            */
-
-            //k1,3
-
-            /**
-            var minorAdjacency = new int[5, 5];
-            minorAdjacency[0, 1] = 1;
-            minorAdjacency[0, 2] = 1;
-            minorAdjacency[1, 3] = 1;
-            minorAdjacency[2, 4] = 1;
-            minorAdjacency[3, 4] = 1;
-
-            var graphAdjacency = new int[5, 5];
-            graphAdjacency[0, 2] = 1;
-            graphAdjacency[1, 2] = 1;
-            graphAdjacency[1, 3] = 1;
-            graphAdjacency[1, 4] = 1;
-            graphAdjacency[2, 3] = 1;
-            graphAdjacency[2, 4] = 1;
-            graphAdjacency[3, 4] = 1;
-
-            var G = Graph<int>.GenerateGraphForAdjacencyMatrix(graphAdjacency, undirected);
-            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency, undirected);
-            */
+            var K5 = Graph<int>.GenerateCompleteGraph(5);
+            K5.PrintAdjacencyMatrix();
 
             var minorAdjacency = new int[4, 4];
             minorAdjacency[0, 1] = 1;
             minorAdjacency[0, 2] = 1;
             minorAdjacency[0, 3] = 1;
-            minorAdjacency[1, 2] = 1;
-            minorAdjacency[1, 3] = 1;
-            //minorAdjacency[2, 3] = 1;
             var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency);
 
-            var graphs = LoadGraphs();
+            Console.WriteLine("Checking for this minor:");
+            M.PrintAdjacencyMatrix();
+
+            int graphOrder = 6;
+
+            var graphs = LoadGraphsOfOrder(graphOrder);
 
             int totalGraphsWithMinor = 0;
 
-            int index = 0;
+            Console.WriteLine("Starting minor check against all graphs of order {0}\n", graphOrder);
+
             foreach (var G in graphs)
             {
-                var result = G.IsValidMinor(M);
-                Console.WriteLine(result);
-                if (result)
+                if (G.FindConnectedComponents().Count != 1)
+                    continue;
+
+                var k33minor = G.IsValidMinor(K33);
+                if (!k33minor)
                 {
-                    Console.WriteLine("{0}, {1}", index, G.GetGraphStoreFormat());
-                    totalGraphsWithMinor++;
+                    var k5minor = G.IsValidMinor(K5);
+                    if (!k5minor)
+                    {
+                        G.PrintAdjacencyMatrix();
+                        Console.WriteLine();
+                        totalGraphsWithMinor++;
+                    }
                 }
             }
 
-            Console.WriteLine("There are {0} graphs with this minor", totalGraphsWithMinor);
+            Console.WriteLine("There are {0} graphs out of {1} with this minor", totalGraphsWithMinor, graphs.Count);
 
         }
     }
