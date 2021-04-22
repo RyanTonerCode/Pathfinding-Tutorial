@@ -62,7 +62,7 @@ namespace PathfindingTutorial.Data_Structures
             return (current, min);
         }
 
-        public WeightedGraphNode<T> Clone()
+        public new WeightedGraphNode<T> Clone()
         {
             var cln = new WeightedGraphNode<T>(value);
             //foreach (var kvp in EdgeWeights)

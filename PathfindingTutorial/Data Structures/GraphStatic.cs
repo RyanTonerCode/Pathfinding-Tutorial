@@ -63,6 +63,8 @@ namespace PathfindingTutorial.Data_Structures
                 for (int j = 0; j < n2; j++)
                     IGraphNode<int>.AddMutualNeighbor(G.graphStructure[i], G.graphStructure[n1 + j]);
 
+            G.TotalEdges = n1 * n2;
+
             return G;
         }
 
@@ -74,6 +76,11 @@ namespace PathfindingTutorial.Data_Structures
                 G.AddNode(new GraphNode<int>(i));
             return G;
         }
+
+        private static readonly Graph<int> K33 = Graph<int>.GenerateCompleteBipartiteGraph(3, 3);
+        private static readonly Graph<int> K5 = Graph<int>.GenerateCompleteGraph(5);
+
+        public static bool IsPlanar(Graph<int> G) => !G.IsValidMinor(K33) && !G.IsValidMinor(K5);
 
         public static List<Graph<int>> GenerateNonIsomorphicGraphsOfOrder(int order)
         {
@@ -311,22 +318,23 @@ namespace PathfindingTutorial.Data_Structures
 
                     heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, perms);
 
-                    var g1_sb = new StringBuilder();
-                    var g2_sb = new StringBuilder();
-
-                    for (int i = 0; i < g1_degreeMap[degree].Count; i++)
-                    {
-                        g1_sb.Append(g1_degreeMap[degree][i]);
-                        g2_sb.Append(g2_degreeMap[degree][i]);
-                        if (print && i < g1_degreeMap[degree].Count - 1)
-                        {
-                            g1_sb.Append(',');
-                            g2_sb.Append(',');
-                        }
-                    }
-
                     if (print)
                     {
+                        var g1_sb = new StringBuilder();
+                        var g2_sb = new StringBuilder();
+
+                        for (int i = 0; i < g1_degreeMap[degree].Count; i++)
+                        {
+
+                            g1_sb.Append(g1_degreeMap[degree][i]);
+                            g2_sb.Append(g2_degreeMap[degree][i]);
+                            if (i < g1_degreeMap[degree].Count - 1)
+                            {
+                                g1_sb.Append(',');
+                                g2_sb.Append(',');
+                            }
+                        }
+
                         Console.WriteLine("G1 vertices of degree {0}: ({1})", degree, g1_sb);
                         Console.WriteLine("G2 vertices of degree {0}: ({1})", degree, g2_sb);
                     }
@@ -445,10 +453,6 @@ namespace PathfindingTutorial.Data_Structures
                 }
                 if (print)
                     Console.WriteLine("Permutation\n{0}\n{1}", perm_str_g1, perm_str_g2);
-
-                //G2= P * G1 * P^-1
-                //G2*P = P * G1
-                //var result = P * G1 * P.GetInverseMatrix();
 
                 var G2P = G2 * P;
                 var PG1 = P * G1;

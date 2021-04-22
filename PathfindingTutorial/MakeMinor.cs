@@ -1,55 +1,82 @@
 ﻿using PathfindingTutorial.Data_Structures;
 using System;
+using System.Collections.Generic;
 
 namespace PathfindingTutorial
 {
     public partial class Program
     {
 
-        private static void IsValidMinor()
+        private static void IsValidMinor(int order)
         {
-            var K33 = Graph<int>.GenerateCompleteBipartiteGraph(3, 3);
-            K33.PrintAdjacencyMatrix();
 
-            var K5 = Graph<int>.GenerateCompleteGraph(5);
-            K5.PrintAdjacencyMatrix();
+            var M = Graph<int>.GenerateCompleteGraph(4);
+            M.RemoveEdge(0, 2);
+            M.RemoveEdge(2, 3);
 
-            var minorAdjacency = new int[4, 4];
-            minorAdjacency[0, 1] = 1;
-            minorAdjacency[0, 2] = 1;
-            minorAdjacency[0, 3] = 1;
-            var M = Graph<int>.GenerateGraphForAdjacencyMatrix(minorAdjacency);
+            var g6 = Graph<int>.GenerateCompleteGraph(6);
+            g6.RemoveEdge(0, 1);
+            g6.RemoveEdge(0, 3);
+            g6.RemoveEdge(2, 3);
+            g6.RemoveEdge(4, 5);
+            g6.RemoveEdge(2, 5);
+            g6.RemoveEdge(1, 3);
+            g6.RemoveEdge(2, 4);
 
+            g6.IsValidMinor(M, true);
+
+
+            /*
             Console.WriteLine("Checking for this minor:");
             M.PrintAdjacencyMatrix();
 
-            int graphOrder = 6;
-
-            var graphs = LoadGraphsOfOrder(graphOrder);
+            var graphs = LoadGraphsOfOrder(order);
 
             int totalGraphsWithMinor = 0;
 
-            Console.WriteLine("Starting minor check against all graphs of order {0}\n", graphOrder);
+            Console.WriteLine("Starting minor check against all graphs of order {0}\n", order);
 
             foreach (var G in graphs)
             {
-                if (G.FindConnectedComponents().Count != 1)
-                    continue;
-
-                var k33minor = G.IsValidMinor(K33);
-                if (!k33minor)
+                var valid_minor = G.IsValidMinor(M);
+                if (valid_minor)
                 {
-                    var k5minor = G.IsValidMinor(K5);
-                    if (!k5minor)
-                    {
-                        G.PrintAdjacencyMatrix();
-                        Console.WriteLine();
-                        totalGraphsWithMinor++;
-                    }
+                    G.PrintAdjacencyMatrix();
+                    Console.WriteLine();
+                    totalGraphsWithMinor++;
                 }
             }
 
-            Console.WriteLine("There are {0} graphs out of {1} with this minor", totalGraphsWithMinor, graphs.Count);
+            graphs[^1].IsValidMinor(M, true);
+
+            Console.WriteLine("There are {0} graphs with this minor out of {1} total graphs", totalGraphsWithMinor, graphs.Count);
+            */
+
+        }
+
+        private static void PlanarityChecker(int order)
+        {
+            var graphs = LoadGraphsOfOrder(order);
+
+            int totalPlanarGraphs = 0, totalConnectedGraphs = 0;
+
+            Console.WriteLine("Starting planarity check against all graphs of order {0}\n", order);
+
+            int i = 0;
+            foreach (var G in graphs)
+            {
+                if(Graph<int>.IsPlanar(G))
+                {
+                    //G.PrintAdjacencyMatrix();
+                    //Console.WriteLine();
+                    totalPlanarGraphs++;
+                    if (G.FindConnectedComponents().Count == 1)
+                        totalConnectedGraphs++;
+                }
+                Console.WriteLine(i++);
+            }
+
+            Console.WriteLine("There are {0} connected planar graphs (of {1} planar graphs) out of {2} total graphs", totalConnectedGraphs, totalPlanarGraphs, graphs.Count);
 
         }
     }

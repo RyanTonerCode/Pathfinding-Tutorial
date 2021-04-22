@@ -733,11 +733,11 @@ namespace PathfindingTutorial.Data_Structures
 
                 var tot_minor_vertices = front.minor.TotalVertices;
 
-                //do not spawn more minors if the edge difference is already met
-                if (tot_minor_vertices < checkMinor.TotalVertices && front.minor.TotalEdges < checkMinor.TotalEdges)
+                //do not spawn more minors if the vertex or edge difference is already met
+                if (tot_minor_vertices < checkMinor.TotalVertices || front.minor.TotalEdges < checkMinor.TotalEdges)
                     continue;
 
-                if (tot_minor_vertices == checkMinor.TotalVertices && front.minor.TotalEdges == checkMinor.TotalEdges)
+                else if (tot_minor_vertices == checkMinor.TotalVertices && front.minor.TotalEdges == checkMinor.TotalEdges)
                 {
 
                     //the graphs have the same size and order, so check for isomorphism.
@@ -745,7 +745,7 @@ namespace PathfindingTutorial.Data_Structures
                     if(print)
                         Console.WriteLine("Found a valid minor of same size and order...");
 
-                    var isom = CheckGraphIsomorphism(checkMinor, front.minor);
+                    var isom = CheckGraphIsomorphism(checkMinor, front.minor, print);
 
                     if (!isom)
                         continue;
@@ -754,7 +754,7 @@ namespace PathfindingTutorial.Data_Structures
                     {
                         Console.WriteLine("Minors are isomorphic ==> Valid Minor");
 
-                        var stk = new Stack<MinorFindingGraphSearch>(10);
+                        var stk = new Stack<MinorFindingGraphSearch>(front.generationNumber+1);
 
                         var backtracking = front;
                         while (backtracking != null)
@@ -804,25 +804,45 @@ namespace PathfindingTutorial.Data_Structures
 
                     foreach (var (i, j) in edgeList)
                     {
-                        //try removing an edge
-                        var new_minor_edge_remove = front.minor.Clone();
+                        //THIS IS A TEST
+                        if (front.generationNumber >= TotalVertices - checkMinor.TotalVertices)
+                        {
 
-                        new_minor_edge_remove.RemoveEdge(i, j);
+                            var degseq_minor = front.minor.GetDegreeSequence(false, true);
 
-                        var edge_removed_str = string.Format("Removed Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
+                            bool impossible = false;
 
-                        queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, front.generationNumber + 1, edge_removed_str));
+                            for (int k = 0; k < degseq_minor.Count; k++)
+                                if (degseq_minor[k] < degreeSeqCheck[k])
+                                {
+                                    impossible = true;
+                                    break;
+                                }
+                            if (impossible)
+                                break;
+
+                            //try removing an edge
+                            var new_minor_edge_remove = front.minor.Clone();
+
+                            new_minor_edge_remove.RemoveEdge(i, j);
+
+                            var edge_removed_str = string.Format("Removed Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
+
+                            queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, front.generationNumber + 1, edge_removed_str));
+
+                        }
 
                         if (tot_minor_vertices > checkMinor.TotalVertices)
                         {
-                            //try contracting an edge
+                            int overlapEdgesRemoved = front.minor.TotalOverlapEdgesInContraction(i, j);
+                            //skip bad contractions
+                            if (front.minor.TotalEdges - 1 - overlapEdgesRemoved < checkMinor.TotalEdges)
+                                continue;
+
+                            //contract the edge
                             var new_minor_contract = front.minor.Clone();
 
                             new_minor_contract.ContractEdge(i, j);
-
-                            //skip bad contractions
-                            if (new_minor_contract.TotalEdges < checkMinor.TotalEdges)
-                                continue;
 
                             var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
@@ -917,6 +937,22 @@ namespace PathfindingTutorial.Data_Structures
             }
         }
 
+        public int TotalOverlapEdgesInContraction(int i, int j)
+        {
+            var node1 = graphStructure[i];
+
+            var existingNeighbors = node1.GetNeighbors();
+
+            var node2 = graphStructure[j];
+
+            int removed = 0;
+
+            foreach (var neighbor in node2.GetNeighbors())
+                if (existingNeighbors.Contains(neighbor))
+                    removed++;
+
+            return removed;
+        }
         public void ContractEdge(int i, int j)
         {
             TotalEdges--;

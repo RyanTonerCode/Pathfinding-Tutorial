@@ -23,13 +23,17 @@ namespace PathfindingTutorial
             DEGREE_SEQUENCE_CONSTRUCTOR,
             IS_VALID_MINOR,
             ISOMORPHISM,
-            MAKE_GRAPHS
+            MAKE_GRAPHS_OF_ORDER,
+            PLANARITY_CHECKER
         };
 
         static void Main(string[] args)
         {
             //Toggle this value to select which subprogram you want to run.
-            var sp = SUBPROGRAM.IS_VALID_MINOR;
+            var sp = SUBPROGRAM.PLANARITY_CHECKER;
+
+            var sw = new Stopwatch();
+            sw.Start();
 
             switch (sp)
             {
@@ -49,17 +53,12 @@ namespace PathfindingTutorial
                     SolvePuzzle(false, true);
                     break;
                 case SUBPROGRAM.SOLVE_MANY_PUZZLES:
-                    var sw = new Stopwatch();
-
-                    sw.Start();
 
                     int numTrials = 1000;
                     for (int i = 0; i < numTrials; i++)
                         SolvePuzzle(false, numTrials == 1);
 
-                    sw.Stop();
-
-                    Console.WriteLine(sw.ElapsedMilliseconds);
+                    PrintStopwatch(sw);
                     break;
                 case SUBPROGRAM.MAKE_FSM:
                     MakeFSM();
@@ -80,19 +79,27 @@ namespace PathfindingTutorial
                     MakeDegreeSequence();
                     break;
                 case SUBPROGRAM.IS_VALID_MINOR:
-                    IsValidMinor();
+                    IsValidMinor(7);
                     break;
-
                 case SUBPROGRAM.ISOMORPHISM:
                     IsIsomorphic();
                     break;
-
-                case SUBPROGRAM.MAKE_GRAPHS:
-                    MakeNonIsomorphicGraphsOfOrderN(7);
+                case SUBPROGRAM.MAKE_GRAPHS_OF_ORDER:
+                    MakeNonIsomorphicGraphsOfOrderN(8);
+                    break;
+                case SUBPROGRAM.PLANARITY_CHECKER:
+                    PlanarityChecker(7);
+                    PrintStopwatch(sw);
                     break;
             }
 
             Console.ReadLine();
+
+            static void PrintStopwatch(Stopwatch sw)
+            {
+                sw.Stop();
+                Console.WriteLine("Took {0} milliseconds", sw.ElapsedMilliseconds);
+            }
         }
     }
 }
