@@ -88,7 +88,7 @@ namespace PathfindingTutorial
                     MakeNonIsomorphicGraphsOfOrderN(8);
                     break;
                 case SUBPROGRAM.PLANARITY_CHECKER:
-                    PlanarityChecker(8);
+                    PlanarityChecker(7);
                     PrintStopwatch(sw);
                     break;
             }

@@ -1,6 +1,5 @@
 ﻿using PathfindingTutorial.Data_Structures;
 using System;
-using System.Collections.Generic;
 
 namespace PathfindingTutorial
 {

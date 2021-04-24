@@ -1,4 +1,4 @@
-﻿using MatrixMath;
+﻿using PathfindingTutorial.Data_Structures.Matrix;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -388,9 +388,10 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             //G2 = PG1P^(-1)
+            //G2P = PG1
 
-            var G1 = new Matrix(g1_adj);
-            var G2 = new Matrix(g2_adj);
+            var G1 = new Matrix.Matrix(g1_adj);
+            var G2 = new Matrix.Matrix(g2_adj);
 
             //create a template permutation matrix
             var template_perm_matrix = new int[totalVertices, totalVertices];
@@ -408,8 +409,9 @@ namespace PathfindingTutorial.Data_Structures
 
             foreach (int[] perm_pick in permutationPicker)
             {
+                int[,] copy_template_matrix = (int[,])template_perm_matrix.Clone();
                 //create the permutation matrix for the vertices from G1 to vertices in G2
-                var P = new Matrix(template_perm_matrix);
+                var P = new Matrix.Matrix(copy_template_matrix);
 
                 totalPermutationMatricesGenerated++;
 

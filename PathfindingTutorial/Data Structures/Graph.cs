@@ -792,10 +792,10 @@ namespace PathfindingTutorial.Data_Structures
 
                             var new_minor = front.minor.Clone();
 
-                            var gsf = new_minor.GetGraphStoreFormat();
-
                             var vertex = new_minor.graphStructure[i];
                             new_minor.RemoveNode(vertex, true);
+
+                            var gsf = new_minor.GetGraphStoreFormat();
 
                             if (graphs_found.Contains(gsf))
                                 continue;
