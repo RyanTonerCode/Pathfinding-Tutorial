@@ -19,7 +19,7 @@ namespace PathfindingTutorial.Data_Structures
         {
             var H = new Graph<T>();
 
-            var clones = new Dictionary<IGraphNode<T>, IGraphNode<T>>();
+            var clones = new Dictionary<IGraphNode<T>, IGraphNode<T>>(graphStructure.Count);
 
             foreach (var node in graphStructure)
             {
@@ -719,7 +719,11 @@ namespace PathfindingTutorial.Data_Structures
             //queue references adjacency matrix to an int of the number of edges removes
             var queue = new Heap<MinorFindingGraphSearch>(1000000);
 
+            var graphs_found = new HashSet<string>(1000000);
+
             var start = new MinorFindingGraphSearch(my_clone, null, 0);
+
+            graphs_found.Add(my_clone.GetGraphStoreFormat());
 
             queue.Enqueue(start);
 
@@ -787,12 +791,19 @@ namespace PathfindingTutorial.Data_Structures
                         {
 
                             var new_minor = front.minor.Clone();
+
+                            var gsf = new_minor.GetGraphStoreFormat();
+
                             var vertex = new_minor.graphStructure[i];
                             new_minor.RemoveNode(vertex, true);
+
+                            if (graphs_found.Contains(gsf))
+                                continue;
 
                             var vertex_removed_str = string.Format("Removed Node {0}", front.minor.graphStructure[i].GetValue());
 
                             queue.Enqueue(new MinorFindingGraphSearch(new_minor, front, front.generationNumber + 1, vertex_removed_str));
+                            graphs_found.Add(gsf);
                         }
                     }
                 }
@@ -808,6 +819,7 @@ namespace PathfindingTutorial.Data_Structures
                         if (front.generationNumber >= TotalVertices - checkMinor.TotalVertices)
                         {
 
+                            /*
                             var degseq_minor = front.minor.GetDegreeSequence(false, true);
 
                             bool impossible = false;
@@ -820,16 +832,22 @@ namespace PathfindingTutorial.Data_Structures
                                 }
                             if (impossible)
                                 break;
+                            */
 
                             //try removing an edge
                             var new_minor_edge_remove = front.minor.Clone();
 
                             new_minor_edge_remove.RemoveEdge(i, j);
 
+                            var gsf = new_minor_edge_remove.GetGraphStoreFormat();
+
+                            if (graphs_found.Contains(gsf))
+                                continue;
+
                             var edge_removed_str = string.Format("Removed Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
                             queue.Enqueue(new MinorFindingGraphSearch(new_minor_edge_remove, front, front.generationNumber + 1, edge_removed_str));
-
+                            graphs_found.Add(gsf);
                         }
 
                         if (tot_minor_vertices > checkMinor.TotalVertices)
@@ -844,9 +862,15 @@ namespace PathfindingTutorial.Data_Structures
 
                             new_minor_contract.ContractEdge(i, j);
 
+                            var gsf = new_minor_contract.GetGraphStoreFormat();
+
+                            if (graphs_found.Contains(gsf))
+                                continue;
+
                             var edge_contracted_str = string.Format("Contracted Edge {0}-{1}", front.minor.graphStructure[i].GetValue(), front.minor.graphStructure[j].GetValue());
 
                             queue.Enqueue(new MinorFindingGraphSearch(new_minor_contract, front, front.generationNumber + 1, edge_contracted_str));
+                            graphs_found.Add(gsf);
                         }
                     }
                 }

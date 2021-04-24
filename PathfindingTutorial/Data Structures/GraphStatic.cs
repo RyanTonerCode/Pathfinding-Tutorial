@@ -80,7 +80,7 @@ namespace PathfindingTutorial.Data_Structures
         private static readonly Graph<int> K33 = Graph<int>.GenerateCompleteBipartiteGraph(3, 3);
         private static readonly Graph<int> K5 = Graph<int>.GenerateCompleteGraph(5);
 
-        public static bool IsPlanar(Graph<int> G) => !G.IsValidMinor(K33) && !G.IsValidMinor(K5);
+        public static bool IsPlanar(Graph<int> G) => !G.IsValidMinor(K5) && !G.IsValidMinor(K33);
 
         public static List<Graph<int>> GenerateNonIsomorphicGraphsOfOrder(int order)
         {
