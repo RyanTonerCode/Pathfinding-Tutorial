@@ -24,6 +24,22 @@ namespace PathfindingTutorial.Data_Structures.Matrix
             set => MatrixArray[i, j] = value;
         }
 
+        public bool UpperTriangleEquals(object obj)
+        {
+            if (obj is Matrix mat)
+            {
+                if (mat.Rows != Rows || mat.Cols != Cols)
+                    return false;
+
+                for (int i = 0; i < Rows; i++)
+                    for (int j = i; j < Cols; j++)
+                        if (this[i, j] != mat[i, j])
+                            return false;
+
+                return true;
+            }
+            return base.Equals(obj);
+        }
 
         public override bool Equals(object obj)
         {

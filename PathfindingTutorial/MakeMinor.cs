@@ -9,6 +9,7 @@ namespace PathfindingTutorial
         private static void IsValidMinor(int order)
         {
 
+            /* DEMO CODE HERE
             var M = Graph<int>.GenerateCompleteGraph(4);
             M.RemoveEdge(0, 2);
             M.RemoveEdge(2, 3);
@@ -23,9 +24,10 @@ namespace PathfindingTutorial
             g6.RemoveEdge(2, 4);
 
             g6.IsValidMinor(M, true);
+            */
 
+            var M = Graph<int>.GenerateCompleteBipartiteGraph(2, 3);
 
-            /*
             Console.WriteLine("Checking for this minor:");
             M.PrintAdjacencyMatrix();
 
@@ -40,8 +42,8 @@ namespace PathfindingTutorial
                 var valid_minor = G.IsValidMinor(M);
                 if (valid_minor)
                 {
-                    G.PrintAdjacencyMatrix();
-                    Console.WriteLine();
+                    //G.PrintAdjacencyMatrix();
+                    //Console.WriteLine();
                     totalGraphsWithMinor++;
                 }
             }
@@ -49,7 +51,7 @@ namespace PathfindingTutorial
             graphs[^1].IsValidMinor(M, true);
 
             Console.WriteLine("There are {0} graphs with this minor out of {1} total graphs", totalGraphsWithMinor, graphs.Count);
-            */
+            
 
         }
 
@@ -69,7 +71,7 @@ namespace PathfindingTutorial
                     //G.PrintAdjacencyMatrix();
                     //Console.WriteLine();
                     totalPlanarGraphs++;
-                    if (G.FindConnectedComponents().Count == 1)
+                    if (G.IsConnected())
                         totalConnectedGraphs++;
                 }
                 Console.WriteLine(i++);

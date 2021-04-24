@@ -86,46 +86,5 @@ namespace PathfindingTutorial.Data_Structures.Matrix
             return mult;
         }
 
-        public static Matrix GetMinor(Matrix mat, int row, int col)
-        {
-            var minor = new int[mat.Rows - 1, mat.Cols - 1];
-            int auxI = 0;
-            for (int i = 0; i < mat.Rows; i++)
-            {
-                if (i == row)
-                    continue;
-                int auxj = 0;
-                for (int j = 0; j < mat.Cols; j++)
-                {
-                    if (j == col)
-                        continue;
-                    minor[auxI, auxj] = mat[i, j];
-                    auxj++;
-                }
-                auxI++;
-            }
-            return new Matrix(minor);
-        }
-
-        public static double Determinant(Matrix mat, int expansion_row = 0)
-        {
-            if (mat.Rows == 2 && mat.Cols == 2)
-                return mat[0, 0] * mat[1, 1] - (mat[0, 1] * mat[1, 0]);
-            else if (mat.IsSquare && mat.Rows > 2)
-            {
-                double result = 0;
-                for (int i = 0; i < mat.Cols; i++)
-                {
-                    double cofactor = Math.Pow(-1, expansion_row + i) * mat[expansion_row, i];
-                    double expansion = cofactor * Determinant(GetMinor(mat, expansion_row, i));
-                    result += expansion;
-                }
-
-                return result;
-
-            }
-            throw new Exception("Invalid matrix dimensions!");
-        }
-
     }
 }

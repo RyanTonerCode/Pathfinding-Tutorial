@@ -611,7 +611,7 @@ namespace PathfindingTutorial.Data_Structures
 
             var queue = new Queue<NodePath<T>>();
 
-            var remainingNodesInOriginal = new List<IGraphNode<T>>();
+            var remainingNodesInOriginal = new List<IGraphNode<T>>(TotalVertices);
             foreach (var node in graphStructure)
                 remainingNodesInOriginal.Add(node);
 
@@ -658,6 +658,42 @@ namespace PathfindingTutorial.Data_Structures
             }
 
             return components;
+        }
+
+        public bool IsConnected()
+        {
+            if (graphStructure.Count == 0)
+                throw new Exception("Empty graph");
+
+            var queue = new Queue<IGraphNode<T>>(TotalVertices);
+
+            var remainingNodesInOriginal = new List<IGraphNode<T>>(TotalVertices);
+            foreach (var node in graphStructure)
+                remainingNodesInOriginal.Add(node);
+
+            var arb_node = remainingNodesInOriginal[0];
+
+            queue.Enqueue(arb_node);
+
+            //this is our "marked" set
+            var marked = new List<IGraphNode<T>>(TotalVertices);
+
+            while (queue.Count > 0)
+            {
+                var front = queue.Dequeue();
+
+                marked.Add(front);
+                remainingNodesInOriginal.Remove(front);
+
+                //add all new nodes to the stack
+                foreach (IGraphNode<T> neighbor in front.GetNeighbors())
+                    if (!marked.Contains(neighbor)) //unmarked neighbor
+                        queue.Enqueue(neighbor);
+
+            }
+
+            //all nodes processed
+            return remainingNodesInOriginal.Count == 0;
         }
 
         private class MinorFindingGraphSearch : IComparable
@@ -723,7 +759,9 @@ namespace PathfindingTutorial.Data_Structures
 
             var start = new MinorFindingGraphSearch(my_clone, null, 0);
 
-            graphs_found.Add(my_clone.GetGraphStoreFormat());
+            static string get_gsf(Graph<T> x) => x.GetAdjCompactStr();
+
+            graphs_found.Add(get_gsf(my_clone));
 
             queue.Enqueue(start);
 
@@ -795,7 +833,7 @@ namespace PathfindingTutorial.Data_Structures
                             var vertex = new_minor.graphStructure[i];
                             new_minor.RemoveNode(vertex, true);
 
-                            var gsf = new_minor.GetGraphStoreFormat();
+                            var gsf = get_gsf(new_minor);
 
                             if (graphs_found.Contains(gsf))
                                 continue;
@@ -839,7 +877,7 @@ namespace PathfindingTutorial.Data_Structures
 
                             new_minor_edge_remove.RemoveEdge(i, j);
 
-                            var gsf = new_minor_edge_remove.GetGraphStoreFormat();
+                            var gsf = get_gsf(new_minor_edge_remove);
 
                             if (graphs_found.Contains(gsf))
                                 continue;
@@ -862,7 +900,7 @@ namespace PathfindingTutorial.Data_Structures
 
                             new_minor_contract.ContractEdge(i, j);
 
-                            var gsf = new_minor_contract.GetGraphStoreFormat();
+                            var gsf = get_gsf(new_minor_contract);
 
                             if (graphs_found.Contains(gsf))
                                 continue;
@@ -927,6 +965,20 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < totalVertices; i++)
                 for (int j = 0; j < totalVertices; j++)
                     sb.Append(adjacencyMatrix[i,j]);
+
+            return sb.ToString();
+        }
+
+        public string GetAdjCompactStr()
+        {
+            //undirected graph
+            var sb = new StringBuilder(TotalVertices * (TotalVertices-1));
+
+            var adjacencyMatrix = GetAdjacencyMatrix(false);
+
+            for (int i = 0; i < TotalVertices; i++)
+                for (int j = i; j < TotalVertices; j++)
+                    sb.Append(adjacencyMatrix[i, j]);
 
             return sb.ToString();
         }

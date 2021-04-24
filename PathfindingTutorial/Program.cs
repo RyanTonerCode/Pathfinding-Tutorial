@@ -80,15 +80,17 @@ namespace PathfindingTutorial
                     break;
                 case SUBPROGRAM.IS_VALID_MINOR:
                     IsValidMinor(7);
+                    PrintStopwatch(sw);
                     break;
                 case SUBPROGRAM.ISOMORPHISM:
                     IsIsomorphic();
                     break;
                 case SUBPROGRAM.MAKE_GRAPHS_OF_ORDER:
                     MakeNonIsomorphicGraphsOfOrderN(8);
+                    PrintStopwatch(sw);
                     break;
                 case SUBPROGRAM.PLANARITY_CHECKER:
-                    PlanarityChecker(7);
+                    PlanarityChecker(8);
                     PrintStopwatch(sw);
                     break;
             }

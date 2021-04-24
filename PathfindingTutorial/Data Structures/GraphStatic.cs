@@ -459,7 +459,7 @@ namespace PathfindingTutorial.Data_Structures
                 var G2P = G2 * P;
                 var PG1 = P * G1;
 
-                if (G2P.Equals(PG1))
+                if (G2P.UpperTriangleEquals(PG1))
                 {
                     if (print)
                     {
