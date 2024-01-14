@@ -194,7 +194,7 @@ namespace PathfindingTutorial.Data_Structures
         #endregion
 
         // Generating permutation using Heap Algorithm
-        private static void heapPermutations(int[] a, int size, int n, List<int[]> permutations)
+        private static void HeapPermutations(int[] a, int size, int n, List<int[]> permutations)
         {
             if (size == 1)
             {
@@ -204,7 +204,7 @@ namespace PathfindingTutorial.Data_Structures
 
             int decrementSize = size - 1;
 
-            heapPermutations(a, decrementSize, n, permutations);
+            HeapPermutations(a, decrementSize, n, permutations);
 
             for (int i = 0; i < decrementSize; i++)
             {
@@ -213,14 +213,12 @@ namespace PathfindingTutorial.Data_Structures
                 else
                     swap(0, decrementSize, ref a);
 
-                heapPermutations(a, decrementSize, n, permutations);
+                HeapPermutations(a, decrementSize, n, permutations);
             }
 
             static void swap(int index1, int index2, ref int[] a)
             {
-                int temp = a[index1];
-                a[index1] = a[index2];
-                a[index2] = temp;
+                (a[index2], a[index1]) = (a[index1], a[index2]);
             }
         }
 
@@ -282,16 +280,16 @@ namespace PathfindingTutorial.Data_Structures
             for (int i = 0; i < totalVertices; i++)
             {
                 var degree_g1 = g1.graphStructure[i].GetDegree();
-                if (g1_degreeMap.ContainsKey(degree_g1))
-                    g1_degreeMap[degree_g1].Add(i);
+                if (g1_degreeMap.TryGetValue(degree_g1, out List<int> value1))
+                    value1.Add(i);
                 else
-                    g1_degreeMap.Add(degree_g1, new List<int>() { i });
+                    g1_degreeMap.Add(degree_g1, [i]);
 
                 var degree_g2 = g2.graphStructure[i].GetDegree();
-                if (g2_degreeMap.ContainsKey(degree_g2))
-                    g2_degreeMap[degree_g2].Add(i);
+                if (g2_degreeMap.TryGetValue(degree_g2, out List<int> value2))
+                    value2.Add(i);
                 else
-                    g2_degreeMap.Add(degree_g2, new List<int>() { i });
+                    g2_degreeMap.Add(degree_g2, [i]);
             }
 
             //map vertices in g1 (keys) to exact matches in g2 for isomorphism (because they have a unique degree)
@@ -316,7 +314,7 @@ namespace PathfindingTutorial.Data_Structures
                 {
                     var perms = new List<int[]>();
 
-                    heapPermutations(g2_degreeMap[degree].ToArray(), totalVerticesOfDegree, totalVerticesOfDegree, perms);
+                    HeapPermutations([.. g2_degreeMap[degree]], totalVerticesOfDegree, totalVerticesOfDegree, perms);
 
                     if (print)
                     {
@@ -363,7 +361,7 @@ namespace PathfindingTutorial.Data_Structures
                 {
                     //add all possible perms to the permutation picker
                     for (int select_perm = 0; select_perm < permList.Count; select_perm++)
-                        permutationPicker.Add(new int[] { select_perm });
+                        permutationPicker.Add([select_perm]);
                 }
                 else
                 {
